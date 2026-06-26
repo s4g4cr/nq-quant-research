@@ -112,15 +112,6 @@ Interactive documentation with full phase-by-phase results, equity curves, and p
 
 ---
 
-## Research Documents
-
-| Document | Content |
-|----------|---------|
-| [NQ ORB Research (Phases 1–7)](docs/index.html) | ORB baseline, regime detection, walk-forward optimization, Monte Carlo FTMO sizing |
-| [NQ VWAP Research (Phases 8–10)](docs/vwap_research.html) | VWAP Reversion, VWAP Breakout with trailing stop, SL calibration |
-
----
-
 ## Disclaimer
 
 This project is for educational and research purposes only. Past backtest results do not guarantee future performance. Nothing here constitutes financial advice.
