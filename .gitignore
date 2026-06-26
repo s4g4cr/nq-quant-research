@@ -1,0 +1,34 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+.eggs/
+dist/
+build/
+
+# Data files — NOT committed (Databento license; see README for instructions)
+glbx-mdp3-20210625-20260624.ohlcv-1m.csv
+*.pkl
+
+# Generated results (CSVs and PNGs reproducible by running the scripts)
+results/*.csv
+results/*.png
+orb_system/results/*.csv
+
+# Environment
+.env
+.env.*
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE / Claude
+.claude/
+.vscode/
+.idea/
