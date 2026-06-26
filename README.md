@@ -44,8 +44,8 @@ Place the CSV file in the project root before running any script. The roll sched
 ## Installation
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/nq-orb-backtest.git
-cd nq-orb-backtest
+git clone https://github.com/s4g4cr/nq-or-backtest.git
+cd nq-or-backtest
 python -m venv venv
 # Windows:
 venv\Scripts\activate
@@ -108,7 +108,7 @@ nq-orb-backtest/
 
 Interactive documentation with full phase-by-phase results, equity curves, and parameter tables:
 
-**[View on GitHub Pages](https://YOUR_USERNAME.github.io/nq-orb-backtest/)**
+**[View on GitHub Pages](https://s4g4cr.github.io/nq-or-backtest/)**
 
 ---
 
