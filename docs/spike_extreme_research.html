@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NQ Spike Extreme S/R Research — Quantitative Trading Research</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: #fafafa;
+  color: #111;
+  line-height: 1.6;
+}
+img { display: block; max-width: 100%; }
+
+:root {
+  --blue:    #0066FF;
+  --blue-10: #e6f0ff;
+  --amber:   #b45309;
+  --amber-10:#fef9c3;
+  --ink:     #111111;
+  --ink-2:   #444444;
+  --ink-3:   #888888;
+  --ink-4:   #bbbbbb;
+  --line:    #e5e5e5;
+  --bg:      #fafafa;
+  --surface: #ffffff;
+  --green:   #16a34a;
+  --red:     #dc2626;
+  --mono:    'Menlo', 'Consolas', monospace;
+  --r2: 4px;
+  --r3: 6px;
+}
+
+/* ── HEADER ── */
+.hdr {
+  position: sticky; top: 0; z-index: 200;
+  background: rgba(250,250,250,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+  height: 52px;
+  display: flex; align-items: center;
+  padding: 0 32px; gap: 40px;
+}
+.hdr-logo {
+  font-size: 13px; font-weight: 600; color: var(--ink);
+  letter-spacing: -0.01em; white-space: nowrap;
+  display: flex; align-items: center; gap: 8px;
+  text-decoration: none;
+}
+.hdr-logo-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--amber);
+}
+.hdr-series {
+  font-size: 12px; color: var(--ink-3);
+  border-left: 1px solid var(--line);
+  padding-left: 16px;
+  white-space: nowrap;
+}
+.hdr-series a {
+  color: var(--blue); text-decoration: none; font-weight: 500;
+}
+.hdr-series a:hover { text-decoration: underline; }
+.hdr-tabs {
+  display: flex; gap: 2px; overflow-x: auto;
+  scrollbar-width: none; flex: 1;
+}
+.hdr-tabs::-webkit-scrollbar { display: none; }
+.tab {
+  flex-shrink: 0;
+  background: none; border: none; cursor: pointer;
+  padding: 6px 12px; border-radius: var(--r2);
+  font-size: 13px; font-weight: 400; color: var(--ink-3);
+  transition: color 120ms, background 120ms;
+  white-space: nowrap; display: flex; align-items: center; gap: 6px;
+}
+.tab:hover { color: var(--ink); background: #f0f0f0; }
+.tab.active { color: var(--ink); font-weight: 500; background: #ebebeb; }
+.tab-dot {
+  width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0;
+}
+.dot-fail    { background: var(--red); }
+.dot-warn    { background: var(--amber); }
+.dot-neutral { background: var(--ink-4); }
+.dot-info    { background: var(--blue); }
+
+/* ── HERO ── */
+.hero {
+  padding: 64px 32px 48px;
+  max-width: 1120px; margin: 0 auto;
+  border-bottom: 1px solid var(--line);
+}
+.hero-series {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-3);
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-series::before {
+  content: '';
+  display: inline-block;
+  width: 20px; height: 1px;
+  background: var(--ink-4);
+}
+.hero-label {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--amber);
+  margin-bottom: 16px;
+}
+.hero-title {
+  font-size: clamp(28px, 4vw, 48px);
+  font-weight: 500; letter-spacing: -0.03em; line-height: 1.1;
+  color: var(--ink); max-width: 680px; margin-bottom: 16px;
+}
+.hero-sub {
+  font-size: 16px; color: var(--ink-2); max-width: 560px;
+  line-height: 1.65; margin-bottom: 40px; font-weight: 300;
+}
+
+/* Expectancy table as hero element */
+.hero-expectancy {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: var(--r3);
+  overflow: hidden;
+  max-width: 720px;
+  margin-bottom: 40px;
+}
+.he-header {
+  padding: 12px 16px;
+  background: #fafafa;
+  border-bottom: 1px solid var(--line);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.he-title {
+  font-size: 12px; font-weight: 600; color: var(--ink-2);
+  letter-spacing: 0.02em;
+}
+.he-sub { font-size: 11px; color: var(--ink-3); }
+.he-row {
+  display: grid;
+  grid-template-columns: 140px 80px 80px 1fr 80px;
+  padding: 9px 16px;
+  border-bottom: 1px solid #f5f5f5;
+  align-items: center;
+  gap: 8px;
+}
+.he-row:last-child { border-bottom: none; }
+.he-row.header-row {
+  background: #f7f7f7;
+  border-bottom: 1px solid var(--line);
+}
+.he-cell {
+  font-family: var(--mono);
+  font-size: 12px; color: var(--ink-2);
+}
+.he-cell.label { font-size: 11px; color: var(--ink-3); font-family: inherit; letter-spacing: 0.05em; text-transform: uppercase; }
+.he-cell.neg { color: var(--red); }
+.he-cell.pos { color: var(--green); }
+.he-cell.bold { font-weight: 600; color: var(--ink); }
+.he-bar {
+  height: 4px; background: #f0f0f0; border-radius: 2px; overflow: hidden;
+}
+.he-bar-fill {
+  height: 100%; border-radius: 2px;
+  background: var(--red);
+}
+.he-bar-fill.pos { background: var(--green); }
+.hero-finding {
+  background: var(--amber-10);
+  border: 1px solid #fde68a;
+  border-left: 3px solid var(--amber);
+  border-radius: var(--r3);
+  padding: 14px 18px;
+  font-size: 14px; color: #78350f;
+  line-height: 1.6;
+  max-width: 720px;
+}
+.hero-finding strong { font-weight: 600; }
+
+/* ── PANELS ── */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ── CONTENT ── */
+.content {
+  max-width: 1120px; margin: 0 auto;
+  padding: 48px 32px 96px;
+}
+.layout-2col {
+  display: grid; grid-template-columns: 1fr 320px; gap: 64px;
+  align-items: start;
+}
+.layout-full { max-width: 720px; }
+.layout-wide { width: 100%; }
+
+/* ── TYPOGRAPHY ── */
+.eyebrow {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase; margin-bottom: 12px;
+}
+.eyebrow.fail    { color: var(--red); }
+.eyebrow.warn    { color: var(--amber); }
+.eyebrow.neutral { color: var(--ink-3); }
+.eyebrow.info    { color: var(--blue); }
+
+h2.title {
+  font-size: 26px; font-weight: 600; letter-spacing: -0.02em;
+  line-height: 1.2; color: var(--ink); margin-bottom: 16px;
+}
+h3.sh {
+  font-size: 14px; font-weight: 600; color: var(--ink);
+  margin: 40px 0 12px; padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+p.lead {
+  font-size: 16px; color: var(--ink-2); line-height: 1.7;
+  margin-bottom: 16px; font-weight: 300;
+}
+p.body {
+  font-size: 14px; color: var(--ink-2); line-height: 1.75;
+  margin-bottom: 14px;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  position: sticky; top: 68px;
+  border: 1px solid var(--line); border-radius: var(--r3);
+  overflow: hidden; background: var(--surface);
+}
+.sb-head {
+  padding: 12px 16px; border-bottom: 1px solid var(--line);
+  background: #f7f7f7;
+}
+.sb-head-label {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--ink-3);
+}
+.sb-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 9px 16px; border-bottom: 1px solid #f0f0f0; gap: 16px;
+}
+.sb-row:last-child { border-bottom: none; }
+.sb-key { font-size: 12px; color: var(--ink-3); white-space: nowrap; }
+.sb-val { font-family: var(--mono); font-size: 12px; color: var(--ink); font-weight: 500; white-space: nowrap; }
+.sb-val.pos  { color: var(--green); }
+.sb-val.neg  { color: var(--red); }
+.sb-val.warn { color: var(--amber); }
+.sb-val.info { color: var(--blue); }
+
+/* ── TABLES ── */
+.tbl-outer {
+  border: 1px solid var(--line); border-radius: var(--r3);
+  overflow: hidden; margin: 24px 0;
+}
+.tbl-outer table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tbl-outer thead { background: #f7f7f7; }
+.tbl-outer th {
+  padding: 9px 14px; text-align: left;
+  font-family: var(--mono); font-size: 10px; font-weight: 500;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3);
+  border-bottom: 1px solid var(--line); white-space: nowrap;
+}
+.tbl-outer td {
+  padding: 9px 14px; border-bottom: 1px solid #f0f0f0;
+  color: var(--ink-2); vertical-align: top;
+}
+.tbl-outer tr:last-child td { border-bottom: none; }
+.tbl-outer tr:hover td { background: #fafafa; }
+td.pos  { color: var(--green); font-weight: 500; }
+td.neg  { color: var(--red); font-weight: 500; }
+td.warn { color: var(--amber); font-weight: 500; }
+td.bold { color: var(--ink); font-weight: 600; }
+td.mono { font-family: var(--mono); font-size: 12px; }
+
+/* ── RULE BOX ── */
+.rulebox {
+  border: 1px solid var(--line); border-radius: var(--r3);
+  overflow: hidden; margin: 20px 0;
+}
+.rulebox-head {
+  padding: 10px 16px; background: #f7f7f7;
+  border-bottom: 1px solid var(--line);
+  font-size: 11px; font-weight: 600; color: var(--ink-2);
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+.rulebox-body { padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.rule {
+  display: flex; gap: 10px; align-items: flex-start;
+  font-size: 13px; color: var(--ink-2); line-height: 1.5;
+}
+.rule-n {
+  font-family: var(--mono); font-size: 11px; color: var(--blue);
+  flex-shrink: 0; width: 18px; padding-top: 1px;
+}
+
+/* ── CALLOUT ── */
+.callout {
+  border-radius: var(--r3); padding: 16px 20px;
+  margin: 20px 0; font-size: 14px; line-height: 1.65;
+  border-left: 3px solid;
+}
+.callout.info    { background: var(--blue-10); border-color: var(--blue); color: #003d99; }
+.callout.warn    { background: var(--amber-10); border-color: var(--amber); color: #78350f; }
+.callout.danger  { background: #fff1f2; border-color: var(--red); color: #991b1b; }
+.callout.success { background: #f0fdf4; border-color: var(--green); color: #14532d; }
+.callout strong  { font-weight: 600; }
+
+/* ── VERDICT ── */
+.verdict {
+  border-radius: var(--r3); padding: 16px 20px;
+  margin: 24px 0; border: 1px solid;
+}
+.verdict.pass   { border-color: #bbf7d0; background: #f0fdf4; }
+.verdict.fail   { border-color: #fecaca; background: #fff1f2; }
+.verdict.warn   { border-color: #fde68a; background: #fffbeb; }
+.verdict.pivot  { border-color: #bfdbfe; background: #eff6ff; }
+.verdict-lbl {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
+  text-transform: uppercase; margin-bottom: 6px;
+}
+.verdict.pass  .verdict-lbl { color: var(--green); }
+.verdict.fail  .verdict-lbl { color: var(--red); }
+.verdict.warn  .verdict-lbl { color: var(--amber); }
+.verdict.pivot .verdict-lbl { color: var(--blue); }
+.verdict p { font-size: 14px; color: var(--ink-2); margin: 0; line-height: 1.6; }
+
+/* ── METRIC STRIP ── */
+.mstrip {
+  display: grid; gap: 1px; background: var(--line);
+  border: 1px solid var(--line); border-radius: var(--r3);
+  overflow: hidden; margin: 24px 0;
+}
+.mstrip-inner {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1px; background: var(--line);
+}
+.mitem { background: var(--surface); padding: 16px 20px; }
+.mitem-val {
+  font-size: 24px; font-weight: 600; letter-spacing: -0.02em;
+  line-height: 1; margin-bottom: 4px;
+}
+.mitem-val.pos  { color: var(--green); }
+.mitem-val.neg  { color: var(--red); }
+.mitem-val.warn { color: var(--amber); }
+.mitem-val.info { color: var(--blue); }
+.mitem-key { font-size: 11px; color: var(--ink-3); font-weight: 400; }
+
+/* ── PHASE COMPARE ── */
+.phase-compare {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  margin: 24px 0;
+}
+
+/* ── DIVIDER ── */
+.divider { border: none; border-top: 1px solid var(--line); margin: 40px 0; }
+
+/* ── FOOTER ── */
+.footer {
+  border-top: 1px solid var(--line);
+  padding: 32px;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 16px;
+  font-size: 12px; color: var(--ink-3);
+}
+.footer strong { color: var(--ink-2); font-weight: 500; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 860px) {
+  .hdr { padding: 0 16px; gap: 12px; }
+  .hdr-series { display: none; }
+  .hero { padding: 40px 16px 32px; }
+  .content { padding: 32px 16px 64px; }
+  .layout-2col { grid-template-columns: 1fr; }
+  .sidebar { position: static; }
+  .phase-compare { grid-template-columns: 1fr; }
+  .he-row { grid-template-columns: 110px 64px 64px 1fr 64px; }
+  .footer { padding: 24px 16px; flex-direction: column; align-items: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <a class="hdr-logo" href="#">
+    <div class="hdr-logo-dot"></div>
+    NQ Spike Extreme Research
+  </a>
+  <div class="hdr-series">
+    Part of <a href="https://s4g4cr.github.io/nq-quant-research/">NQ Quantitative Research Series</a>
+  </div>
+  <nav class="hdr-tabs" role="tablist">
+    <button class="tab active" onclick="show('overview',this)">
+      <span class="tab-dot dot-neutral"></span>Overview
+    </button>
+    <button class="tab" onclick="show('p18',this)">
+      <span class="tab-dot dot-fail"></span>Ph 18 · Spike Extreme S/R
+    </button>
+    <button class="tab" onclick="show('diagnostic',this)">
+      <span class="tab-dot dot-info"></span>Ph 18 · Diagnostic
+    </button>
+    <button class="tab" onclick="show('findings',this)">
+      <span class="tab-dot dot-warn"></span>What We Learned
+    </button>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-series">NQ Quantitative Research · Phase 18</div>
+  <div class="hero-label">Research concluded · No edge confirmed</div>
+  <h1 class="hero-title">Opening Spike Extreme as Support/Resistance in NQ futures</h1>
+  <p class="hero-sub">
+    One phase of systematic testing on the hypothesis that the opening 5-minute
+    spike extreme acts as a structural S/R level for the first 2 hours of the session.
+    The ATR-based SL fix from Phase 17 created viable R/R geometry. The win rate
+    collapsed 12 percentage points in the OOS test period, eliminating the edge.
+  </p>
+
+  <!-- Expectancy summary table -->
+  <div class="hero-expectancy">
+    <div class="he-header">
+      <span class="he-title">Theoretical expectancy by TP variant — Phase 18 diagnostic</span>
+      <span class="he-sub">Pure price · no slippage or commission · 944 signals</span>
+    </div>
+    <div class="he-row header-row">
+      <span class="he-cell label">TP Target</span>
+      <span class="he-cell label">WR%</span>
+      <span class="he-cell label">Avg R/R</span>
+      <span class="he-cell label">Expectancy</span>
+      <span class="he-cell label">Result</span>
+    </div>
+    <div class="he-row">
+      <span class="he-cell">TP-A · session_open</span>
+      <span class="he-cell">32.4%</span>
+      <span class="he-cell">2.16</span>
+      <span class="he-cell">
+        <div class="he-bar"><div class="he-bar-fill pos" style="width:20%"></div></div>
+      </span>
+      <span class="he-cell pos">+0.022</span>
+    </div>
+    <div class="he-row">
+      <span class="he-cell bold">TP-B · open + 0.5×spike</span>
+      <span class="he-cell bold">24.7%</span>
+      <span class="he-cell bold">3.13</span>
+      <span class="he-cell">
+        <div class="he-bar"><div class="he-bar-fill pos" style="width:16%"></div></div>
+      </span>
+      <span class="he-cell pos bold">+0.018</span>
+    </div>
+    <div class="he-row">
+      <span class="he-cell">TP-C · opp. extreme</span>
+      <span class="he-cell">27.3%</span>
+      <span class="he-cell">2.55</span>
+      <span class="he-cell">
+        <div class="he-bar"><div class="he-bar-fill" style="width:28%"></div></div>
+      </span>
+      <span class="he-cell neg">−0.029</span>
+    </div>
+  </div>
+
+  <div class="hero-finding">
+    <strong>Key finding:</strong> The ATR-based SL fix worked geometrically — median R/R
+    improved to 1.78 (TP-A) and 3.09 (TP-B), producing marginally positive theoretical
+    expectancy. The problem is OOS win rate collapse: 35.7% in training (2021–2024)
+    fell to 23.4% in test (2025–2026). No configuration cleared PF > 1.0 in the OOS
+    window. The signal is real; the edge is not durable.
+  </div>
+</section>
+
+<!-- ═══════════════ OVERVIEW ═══════════════ -->
+<div class="panel active" id="panel-overview">
+<div class="content">
+  <div class="layout-2col">
+    <div>
+      <div class="eyebrow neutral">Research summary</div>
+      <h2 class="title">Better geometry, same outcome — a fragile training edge</h2>
+      <p class="lead">
+        Phase 17 established that the opening spike extreme is a real behavioral anchor
+        — price reverts to it 93.3% of the time. Phase 18 tested whether that level
+        acts as durable support/resistance on subsequent retests, with the critical fix
+        of decoupling the stop loss from the spike extreme itself.
+      </p>
+      <p class="body">
+        The ATR-based SL (1.0× ATR_1min at entry bar) immediately resolved the geometry
+        problem identified in Phase 17. Median R/R climbed to 1.78 for TP-A and 3.09
+        for TP-B, versus 0.50 and 0.86 in Phase 17. Theoretical expectancy turned
+        marginally positive (+0.022 for TP-A). All 9 experiments were able to run
+        — the diagnostic gate was cleared for the first time in the spike series.
+      </p>
+      <p class="body">
+        Training period (2021–2024) results were marginally profitable: PF 1.044,
+        SR 0.344, WR 35.7% (Exp 1 baseline). But the OOS test period (2025–2026)
+        showed a sharp WR collapse to 23.4%, driving all configurations to PF &lt; 1.0.
+        The best combined experiment (Exp 9: spike&gt;3×ATR, min R/R=2.0) reached only
+        PF 0.915 on 90 test trades — insufficient to trigger walk-forward validation.
+      </p>
+
+      <div class="callout warn">
+        <strong>What changed in 2025–2026:</strong> Broader ATRs in 2025 increased SL
+        distances while TP-A (session_open) remained a fixed geometric target. Entries
+        that previously had comfortable room to session_open now required a larger
+        adverse excursion before reaching TP. Higher volatility amplified the gap between
+        theoretical expectancy (computed on full dataset) and live hit rate. The signal
+        correctly identifies the behavioral pattern; the cost structure under wide ATR
+        regimes is unfavorable.
+      </div>
+
+      <h3 class="sh">Phase 18 at a glance</h3>
+      <div class="tbl-outer">
+        <table>
+          <thead>
+            <tr><th>Metric</th><th>Value</th><th>Interpretation</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Sessions with qualifying spike</td>
+              <td class="warn">85.6% (1,099 / 1,284)</td>
+              <td>Nearly every session has a spike &gt;1.5× ATR</td>
+            </tr>
+            <tr>
+              <td>Sessions with retest of spike extreme</td>
+              <td class="warn">93.3% of qualifying</td>
+              <td>Price consistently returns to the spike extreme level</td>
+            </tr>
+            <tr>
+              <td>Rejection bar rate at extreme</td>
+              <td class="warn">81.7%</td>
+              <td>High percentage of zone entries show rejection close</td>
+            </tr>
+            <tr>
+              <td>Total signals (5 yrs, ≤2/session)</td>
+              <td class="mono">944</td>
+              <td>8× more signals than Phase 17 due to extended window + 2 entries</td>
+            </tr>
+            <tr>
+              <td>TP-A theoretical expectancy</td>
+              <td class="pos">+0.022</td>
+              <td>Marginally positive — geometry fixed, diagnostic passed</td>
+            </tr>
+            <tr>
+              <td>Train WR (Exp 1 baseline)</td>
+              <td class="warn">35.7%</td>
+              <td>Consistent with theoretical 32.4% — signal is real in sample</td>
+            </tr>
+            <tr>
+              <td>Test WR (Exp 1 baseline)</td>
+              <td class="neg">23.4%</td>
+              <td>12pp collapse in OOS period — signal does not hold</td>
+            </tr>
+            <tr>
+              <td>Best test PF (Exp 9 combined)</td>
+              <td class="neg">0.915</td>
+              <td>Below 1.0 — no edge confirmed, WFO not executed</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="verdict fail">
+        <div class="verdict-lbl">Verdict · Phase 18</div>
+        <p>Hypothesis falsified. The ATR-based SL resolved the geometry problem from Phase 17 and produced marginally positive theoretical expectancy. However, the OOS win rate collapsed 12 percentage points, and no experiment achieved PF &gt; 1.0 in the 2025–2026 test window. Walk-forward validation was not triggered. The spike extreme is a real behavioral level, but the rejection bar entry strategy does not produce a durable edge after transaction costs.</p>
+      </div>
+    </div>
+
+    <div>
+      <div class="sidebar">
+        <div class="sb-head"><div class="sb-head-label">Research scope</div></div>
+        <div class="sb-row"><span class="sb-key">Phase</span><span class="sb-val">18</span></div>
+        <div class="sb-row"><span class="sb-key">Asset</span><span class="sb-val">NQ E-mini Futures</span></div>
+        <div class="sb-row"><span class="sb-key">Timeframe</span><span class="sb-val">1-minute bars</span></div>
+        <div class="sb-row"><span class="sb-key">Dataset</span><span class="sb-val">2021-06-25 to 2026-06-17</span></div>
+        <div class="sb-row"><span class="sb-key">Bars</span><span class="sb-val">492,990</span></div>
+        <div class="sb-row"><span class="sb-key">Split</span><span class="sb-val">70% / 30%</span></div>
+        <div class="sb-head" style="border-top:1px solid var(--line)"><div class="sb-head-label">Spike statistics</div></div>
+        <div class="sb-row"><span class="sb-key">Sessions analyzed</span><span class="sb-val">1,284</span></div>
+        <div class="sb-row"><span class="sb-key">Spike &gt; 1.5× ATR</span><span class="sb-val warn">85.6%</span></div>
+        <div class="sb-row"><span class="sb-key">Up spikes</span><span class="sb-val">50.9%</span></div>
+        <div class="sb-row"><span class="sb-key">Down spikes</span><span class="sb-val">49.1%</span></div>
+        <div class="sb-row"><span class="sb-key">Retest rate</span><span class="sb-val warn">93.3%</span></div>
+        <div class="sb-row"><span class="sb-key">Avg retests/session</span><span class="sb-val">2.73</span></div>
+        <div class="sb-row"><span class="sb-key">Rejection rate</span><span class="sb-val warn">81.7%</span></div>
+        <div class="sb-head" style="border-top:1px solid var(--line)"><div class="sb-head-label">Train results (2021–2024)</div></div>
+        <div class="sb-row"><span class="sb-key">Trades (Exp 1)</span><span class="sb-val">521</span></div>
+        <div class="sb-row"><span class="sb-key">Win rate</span><span class="sb-val warn">35.7%</span></div>
+        <div class="sb-row"><span class="sb-key">Profit factor</span><span class="sb-val warn">1.044</span></div>
+        <div class="sb-row"><span class="sb-key">Sharpe ratio</span><span class="sb-val warn">0.344</span></div>
+        <div class="sb-head" style="border-top:1px solid var(--line)"><div class="sb-head-label">Test results (2025–2026)</div></div>
+        <div class="sb-row"><span class="sb-key">Trades (Exp 1)</span><span class="sb-val">205</span></div>
+        <div class="sb-row"><span class="sb-key">Win rate</span><span class="sb-val neg">23.4%</span></div>
+        <div class="sb-row"><span class="sb-key">Profit factor</span><span class="sb-val neg">0.733</span></div>
+        <div class="sb-row"><span class="sb-key">Sharpe ratio</span><span class="sb-val neg">−2.370</span></div>
+        <div class="sb-row"><span class="sb-key">Best PF (Exp 9)</span><span class="sb-val neg">0.915</span></div>
+        <div class="sb-row"><span class="sb-key">WFO executed</span><span class="sb-val neg">No</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════ PHASE 18 ═══════════════ -->
+<div class="panel" id="panel-p18">
+<div class="content">
+  <div class="layout-2col">
+    <div>
+      <div class="eyebrow fail">Phase 18 · Rejected</div>
+      <h2 class="title">Opening Spike Extreme as Support/Resistance</h2>
+      <p class="lead">
+        Phase 18 directly addressed Phase 17's root cause. Instead of entering after
+        a spike and placing the SL at the spike extreme, Phase 18 enters when price
+        <em>returns</em> to the spike extreme and shows rejection — with an ATR-based SL
+        that is independent of spike geometry.
+      </p>
+
+      <h3 class="sh">Spike detection — 09:30 to 09:34</h3>
+      <p class="body">
+        Same spike detection as Phase 17 with one change: ties (up_move == down_move)
+        go to "up" direction instead of being skipped. All sessions now produce a
+        SpikeInfo — direction filter is applied to trading logic, not detection.
+      </p>
+      <div class="rulebox">
+        <div class="rulebox-head">Spike classification</div>
+        <div class="rulebox-body">
+          <div class="rule"><span class="rule-n">1</span><span><strong>session_open</strong> = open price of 09:30 bar</span></div>
+          <div class="rule"><span class="rule-n">2</span><span><strong>spike_high / spike_low</strong> = max high / min low across 09:30–09:34</span></div>
+          <div class="rule"><span class="rule-n">3</span><span><strong>up_move</strong> = spike_high − session_open · <strong>down_move</strong> = session_open − spike_low</span></div>
+          <div class="rule"><span class="rule-n">4</span><span><strong>direction</strong> = "up" if up_move ≥ down_move, "down" otherwise (ties → "up")</span></div>
+          <div class="rule"><span class="rule-n">5</span><span><strong>Size filter:</strong> spike_magnitude &gt; 1.5× ATR(20) [1-min Wilder ATR] — applied in run()</span></div>
+        </div>
+      </div>
+
+      <h3 class="sh">Entry rules — 09:35 to 11:30</h3>
+      <p class="body">
+        For a <strong>down spike</strong> (spike extreme = spike_low), we look for LONG entries
+        when price returns to within 0.5×ATR of the spike low and shows a rejection bar.
+        The critical difference from Phase 17: SL is 1.0×ATR at the entry bar, not
+        spike_low. This decouples SL distance from spike geometry.
+      </p>
+      <div class="rulebox">
+        <div class="rulebox-head">Long entry conditions (down spike · 7 conditions)</div>
+        <div class="rulebox-body">
+          <div class="rule"><span class="rule-n">01</span><span>Bar low ≤ spike_low + <strong>0.5× ATR_1min</strong> — price entered the retest zone</span></div>
+          <div class="rule"><span class="rule-n">02</span><span>Bar close &gt; spike_low — closes above the extreme (rejection)</span></div>
+          <div class="rule"><span class="rule-n">03</span><span>Bar close &gt; bar open — bullish bar</span></div>
+          <div class="rule"><span class="rule-n">04</span><span>Bar close &gt; bar low + 0.5×(bar high − bar low) — upper 50% of range</span></div>
+          <div class="rule"><span class="rule-n">05</span><span>Bar volume &gt; <strong>1.2× avg_volume(20)</strong> — elevated participation</span></div>
+          <div class="rule"><span class="rule-n">06</span><span>Bar close &lt; session_open — still below open (TP-A room intact)</span></div>
+          <div class="rule"><span class="rule-n">SL</span><span>entry − <strong>1.0× ATR_1min at entry bar</strong> (fixed, ATR-based, not spike-based)</span></div>
+          <div class="rule"><span class="rule-n">RR</span><span><strong>Hard gate:</strong> skip if (TP − entry) / sl_pts &lt; 1.0</span></div>
+          <div class="rule"><span class="rule-n">Max</span><span>90 bars (1.5 hrs) · EOD 15:45 · <strong>up to 2 entries per session</strong> (sequential)</span></div>
+        </div>
+      </div>
+
+      <h3 class="sh">Three TP variants tested</h3>
+      <div class="rulebox">
+        <div class="rulebox-head">Target options (LONG example — down spike)</div>
+        <div class="rulebox-body">
+          <div class="rule"><span class="rule-n">A</span><span><strong>session_open</strong> — conservative; median R/R 1.78 in diagnostic</span></div>
+          <div class="rule"><span class="rule-n">B</span><span><strong>session_open + 0.5×(session_open − spike_low)</strong> — extended; median R/R 3.09</span></div>
+          <div class="rule"><span class="rule-n">C</span><span><strong>spike_high</strong> (opposite extreme) — full reversion; median R/R 2.56</span></div>
+          <div class="rule"><span class="rule-n">T</span><span><strong>Trailing stop</strong> (Exp 4) — activates at 1.0×ATR profit, trails 0.75×ATR from peak</span></div>
+        </div>
+      </div>
+
+      <h3 class="sh">Why the geometry fix wasn't enough</h3>
+      <p class="body">
+        R/R geometry was genuinely fixed. The diagnostic showed median R/R of 1.78–3.09
+        depending on TP variant, and theoretical expectancy was marginally positive.
+        The training period (2021–2024) confirmed this with PF 1.044.
+      </p>
+      <div class="callout danger">
+        <strong>The win rate problem:</strong> In the OOS test period (2025–2026),
+        win rate dropped from 35.7% to 23.4% (Exp 1). With ATR-sized SL, the break-even
+        WR for R/R=2.76 (Exp 1 average) is only 27%. The 23.4% OOS WR still falls below
+        that threshold. Higher 2025 volatility increased ATR, widening SL distances
+        while TP-A (session_open) remained the same distance away — shrinking effective R/R
+        per trade and pushing real break-even WR upward. The signal fires on the right bars;
+        the market no longer follows through at the required rate.
+      </div>
+
+      <h3 class="sh">Experiment summary</h3>
+      <div class="mstrip">
+        <div class="mstrip-inner">
+          <div class="mitem">
+            <div class="mitem-val neg">0.733</div>
+            <div class="mitem-key">Exp 1 PF (TP-A baseline)</div>
+          </div>
+          <div class="mitem">
+            <div class="mitem-val neg">0.660</div>
+            <div class="mitem-key">Exp 2 PF (TP-B)</div>
+          </div>
+          <div class="mitem">
+            <div class="mitem-val neg">0.539</div>
+            <div class="mitem-key">Exp 4 PF (trailing stop)</div>
+          </div>
+          <div class="mitem">
+            <div class="mitem-val neg">0.915</div>
+            <div class="mitem-key">Exp 9 PF (best combined)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tbl-outer">
+        <table>
+          <thead>
+            <tr><th>Exp</th><th>Exit</th><th>spike_mult</th><th>min_rr</th><th>PF train</th><th>PF test</th><th>SR test</th><th>WR test</th><th>N test</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>TP-A</td><td class="mono">1.5</td><td class="mono">1.0</td><td class="warn mono">1.044</td><td class="neg mono">0.733</td><td class="neg mono">−2.37</td><td class="neg mono">23.4%</td><td class="mono">205</td></tr>
+            <tr><td>2</td><td>TP-B</td><td class="mono">1.5</td><td class="mono">1.0</td><td class="warn mono">1.010</td><td class="neg mono">0.660</td><td class="neg mono">−3.06</td><td class="neg mono">19.2%</td><td class="mono">240</td></tr>
+            <tr><td>3</td><td>TP-C</td><td class="mono">1.5</td><td class="mono">1.0</td><td class="neg mono">0.962</td><td class="neg mono">0.720</td><td class="neg mono">−2.46</td><td class="neg mono">22.3%</td><td class="mono">238</td></tr>
+            <tr><td>4</td><td>Trailing</td><td class="mono">1.5</td><td class="mono">1.0</td><td class="neg mono">0.567</td><td class="neg mono">0.539</td><td class="neg mono">−5.25</td><td class="neg mono">47.4%</td><td class="mono">213</td></tr>
+            <tr><td>5</td><td>TP-A</td><td class="mono">3.0</td><td class="mono">1.0</td><td class="warn mono">1.010</td><td class="neg mono">0.851</td><td class="neg mono">−1.24</td><td class="neg mono">24.0%</td><td class="mono">121</td></tr>
+            <tr><td>6</td><td>TP-A + quality</td><td class="mono">3.0</td><td class="mono">1.0</td><td class="warn mono">1.109</td><td class="neg mono">0.844</td><td class="neg mono">−1.31</td><td class="neg mono">25.5%</td><td class="mono">47</td></tr>
+            <tr><td>7</td><td>TP-A + POC</td><td class="mono">3.0</td><td class="mono">1.0</td><td class="neg mono">0.397</td><td class="warn mono">2.818</td><td class="warn mono">12.5</td><td class="warn mono">60.0%</td><td class="neg mono">5</td></tr>
+            <tr><td>8</td><td>TP-A</td><td class="mono">3.0</td><td class="mono">2.0</td><td class="warn mono">1.071</td><td class="neg mono">0.915</td><td class="neg mono">−0.67</td><td class="neg mono">21.1%</td><td class="mono">90</td></tr>
+            <tr><td class="bold">9</td><td class="bold">TP-A best</td><td class="mono bold">3.0</td><td class="mono bold">2.0</td><td class="warn mono bold">1.071</td><td class="neg mono bold">0.915</td><td class="neg mono bold">−0.67</td><td class="neg mono bold">21.1%</td><td class="mono bold">90</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="body" style="font-size:12px; color:var(--ink-3); margin-top:-12px;">
+        Note: Exp 7 (POC confluence) shows PF=2.818 on 5 test trades — statistically
+        meaningless. N=5 is far below any minimum sample threshold.
+      </p>
+
+      <div class="verdict fail">
+        <div class="verdict-lbl">Verdict · Phase 18</div>
+        <p>All 9 experiment configurations show PF &lt; 1.0 in the OOS test window. WFO not triggered (Exp 9 PF=0.915 ≤ 1.0). The geometry fix (ATR-based SL) resolved the structural flaw from Phase 17, but the signal's win rate in the 2025–2026 test period is insufficient to cover transaction costs at any TP configuration.</p>
+      </div>
+    </div>
+
+    <div>
+      <div class="sidebar">
+        <div class="sb-head"><div class="sb-head-label">Strategy parameters</div></div>
+        <div class="sb-row"><span class="sb-key">Spike window</span><span class="sb-val">09:30–09:34</span></div>
+        <div class="sb-row"><span class="sb-key">Entry window</span><span class="sb-val">09:35–11:30</span></div>
+        <div class="sb-row"><span class="sb-key">Spike filter</span><span class="sb-val">&gt;1.5× ATR(20)</span></div>
+        <div class="sb-row"><span class="sb-key">ATR reference</span><span class="sb-val">1-min Wilder</span></div>
+        <div class="sb-row"><span class="sb-key">Retest zone</span><span class="sb-val">0.5× ATR</span></div>
+        <div class="sb-row"><span class="sb-key">Volume filter</span><span class="sb-val">1.2× avg(20)</span></div>
+        <div class="sb-row"><span class="sb-key">SL</span><span class="sb-val">1.0× ATR (ATR-based)</span></div>
+        <div class="sb-row"><span class="sb-key">Hard R/R gate</span><span class="sb-val">≥ 1.0</span></div>
+        <div class="sb-row"><span class="sb-key">Max entries/session</span><span class="sb-val">2 (sequential)</span></div>
+        <div class="sb-row"><span class="sb-key">Max bars/trade</span><span class="sb-val">90 (1.5 hrs)</span></div>
+        <div class="sb-row"><span class="sb-key">Slippage</span><span class="sb-val">0.5 pts/side</span></div>
+        <div class="sb-row"><span class="sb-key">Commission</span><span class="sb-val">$4 RT / contract</span></div>
+        <div class="sb-head" style="border-top:1px solid var(--line)"><div class="sb-head-label">Best experiment (Exp 9)</div></div>
+        <div class="sb-row"><span class="sb-key">TP variant</span><span class="sb-val">A (session_open)</span></div>
+        <div class="sb-row"><span class="sb-key">spike_mult</span><span class="sb-val">3.0× ATR</span></div>
+        <div class="sb-row"><span class="sb-key">min_rr</span><span class="sb-val">2.0</span></div>
+        <div class="sb-row"><span class="sb-key">Train PF</span><span class="sb-val warn">1.071</span></div>
+        <div class="sb-row"><span class="sb-key">Test PF</span><span class="sb-val neg">0.915</span></div>
+        <div class="sb-row"><span class="sb-key">Test N</span><span class="sb-val">90</span></div>
+        <div class="sb-row"><span class="sb-key">WFO</span><span class="sb-val neg">Not run</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════ DIAGNOSTIC ═══════════════ -->
+<div class="panel" id="panel-diagnostic">
+<div class="content layout-full">
+  <div class="eyebrow info">Phase 18 · Diagnostic</div>
+  <h2 class="title">6-section pre-P&amp;L diagnostic</h2>
+  <p class="lead">
+    The mandatory diagnostic runs on the full dataset before any backtesting. It
+    gates experiments on theoretical expectancy — experiments only run if at least
+    one TP variant shows positive expectancy without costs. Phase 18 passed for
+    the first time in the spike series (TP-A: +0.022, TP-B: +0.018).
+  </p>
+
+  <h3 class="sh">Section 1 — Spike statistics</h3>
+  <div class="mstrip">
+    <div class="mstrip-inner">
+      <div class="mitem">
+        <div class="mitem-val info">1,284</div>
+        <div class="mitem-key">Total sessions analyzed</div>
+      </div>
+      <div class="mitem">
+        <div class="mitem-val warn">85.6%</div>
+        <div class="mitem-key">Spike &gt; 1.5× ATR</div>
+      </div>
+      <div class="mitem">
+        <div class="mitem-val warn">70.9%</div>
+        <div class="mitem-key">Spike &gt; 2.0× ATR</div>
+      </div>
+      <div class="mitem">
+        <div class="mitem-val info">2.66</div>
+        <div class="mitem-key">Median spike/ATR ratio</div>
+      </div>
+    </div>
+  </div>
+  <p class="body">
+    Direction balance: 50.9% up spikes, 49.1% down spikes — the spike detection
+    in Phase 18 uses ties-to-"up" so all sessions yield a valid SpikeInfo. The
+    spike/ATR ratio distribution: p10=1.33, p25=1.86, p50=2.66, p75=3.71, p90=4.98.
+    Median spike is 2.66× the 1-minute ATR.
+  </p>
+
+  <h3 class="sh">Section 2 — Retest frequency (09:35–11:30)</h3>
+  <div class="mstrip">
+    <div class="mstrip-inner">
+      <div class="mitem">
+        <div class="mitem-val warn">93.3%</div>
+        <div class="mitem-key">Sessions with ≥1 retest</div>
+      </div>
+      <div class="mitem">
+        <div class="mitem-val info">2.73</div>
+        <div class="mitem-key">Avg retests / session</div>
+      </div>
+      <div class="mitem">
+        <div class="mitem-val info">3,001</div>
+        <div class="mitem-key">Total retest events</div>
+      </div>
+    </div>
+  </div>
+  <p class="body">
+    A retest is counted each time price enters within 0.5×ATR of the spike extreme
+    after having left the zone. Median retests per qualifying session: 2. At the 90th
+    percentile: 6 retests per session. The spike extreme level is revisited repeatedly
+    — it functions as a true magnetic level for the first 2 hours.
+  </p>
+
+  <h3 class="sh">Section 3 — Rejection rate</h3>
+  <div class="mstrip">
+    <div class="mstrip-inner">
+      <div class="mitem">
+        <div class="mitem-val info">3,001</div>
+        <div class="mitem-key">Zone-entry events</div>
+      </div>
+      <div class="mitem">
+        <div class="mitem-val warn">81.7%</div>
+        <div class="mitem-key">Bars with rejection close</div>
+      </div>
+    </div>
+  </div>
+  <p class="body">
+    Of 3,001 zone-entry bars, 2,451 (81.7%) close on the "away from extreme" side
+    — above spike_low for LONG setups, below spike_high for SHORT. The level is
+    genuinely magnetic: most zone visits end in a rejection close, not a close
+    through the extreme. This high rejection rate is why theoretical expectancy
+    is positive: the signal identifies a real behavioral tendency.
+  </p>
+
+  <h3 class="sh">Section 4 — R/R distribution with ATR-based SL</h3>
+  <div class="tbl-outer">
+    <table>
+      <thead>
+        <tr><th>TP Variant</th><th>p25 R/R</th><th>p50 R/R</th><th>p75 R/R</th><th>R/R &gt;1</th><th>R/R &gt;2</th><th>R/R &gt;3</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>TP-A · session_open</td>
+          <td class="mono">1.05</td><td class="warn mono">1.78</td><td class="mono">2.68</td>
+          <td class="warn">77%</td><td class="warn">61%</td><td>19%</td>
+        </tr>
+        <tr>
+          <td>TP-B · open + 0.5×spike</td>
+          <td class="mono">2.10</td><td class="warn mono">3.09</td><td class="mono">4.38</td>
+          <td class="pos">98%</td><td class="pos">90%</td><td class="warn">53%</td>
+        </tr>
+        <tr>
+          <td>TP-C · opposite extreme</td>
+          <td class="mono">1.78</td><td class="warn mono">2.56</td><td class="mono">3.46</td>
+          <td class="pos">96%</td><td class="warn">84%</td><td class="warn">36%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="body">
+    Contrast with Phase 17: median R/R was 0.50 (TP-A) and 0.86 (TP-B). Phase 18
+    with ATR-based SL achieves median R/R 1.78 (TP-A) and 3.09 (TP-B). SL distance
+    median: 15.9 pts (ATR). TP-A distance median: 28.0 pts to session_open. The
+    geometry is correctly structured.
+  </p>
+
+  <div class="callout success">
+    <strong>Diagnostic gate: PASSED</strong> — median R/R &gt; 1.0 for TP-A and TP-B.
+    Proceeding to theoretical expectancy analysis.
+  </div>
+
+  <h3 class="sh">Section 5 — Theoretical expectancy (pure price simulation)</h3>
+  <div class="tbl-outer">
+    <table>
+      <thead>
+        <tr><th>TP Variant</th><th>Sims</th><th>Win rate</th><th>Avg R/R</th><th>Expectancy</th><th>Gate</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>TP-A · session_open</td>
+          <td class="mono">723</td>
+          <td class="warn mono">32.4%</td>
+          <td class="mono">2.16</td>
+          <td class="pos mono">+0.022</td>
+          <td class="pos">Pass</td>
+        </tr>
+        <tr>
+          <td>TP-B · open + 0.5×spike</td>
+          <td class="mono">924</td>
+          <td class="neg mono">24.7%</td>
+          <td class="mono">3.13</td>
+          <td class="pos mono">+0.018</td>
+          <td class="pos">Pass</td>
+        </tr>
+        <tr>
+          <td>TP-C · opposite extreme</td>
+          <td class="mono">907</td>
+          <td class="neg mono">27.3%</td>
+          <td class="mono">2.55</td>
+          <td class="neg mono">−0.029</td>
+          <td class="neg">Fail</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="body">
+    Simulation checks whether TP or SL is hit first on subsequent bars. Win rates
+    (32.4% and 24.7%) are much lower than Phase 17's TP-A WR (63.5%) because the
+    entry is now at the spike extreme level — further from TP but the better R/R
+    compensates. TP-A and TP-B are marginally positive; TP-C is slightly negative.
+  </p>
+
+  <div class="callout info">
+    <strong>Diagnostic passed — proceeding to experiments.</strong> At least one TP
+    variant (TP-A and TP-B) shows positive theoretical expectancy. Phase 18 experiments
+    were executed. Note: the positive expectancy is marginal (+0.022, +0.018) — a thin
+    buffer before costs are applied.
+  </div>
+
+  <h3 class="sh">Section 6 — Signal frequency</h3>
+  <p class="body">
+    944 total signals over 5 years (≤2 per session), against 1,284 trading days.
+    0.74 signals per trading day — below the 0.8/day threshold flagged as potentially
+    too sparse for monthly FTMO targets. Qualifying sessions (spike &gt;1.5×ATR): 1,099.
+    Average signals per qualifying session: 0.86. The entry criteria (7 conditions +
+    R/R gate) filter most retest events — only ~31% of retest events pass all conditions.
+  </p>
+</div>
+</div>
+
+<!-- ═══════════════ FINDINGS ═══════════════ -->
+<div class="panel" id="panel-findings">
+<div class="content layout-full">
+  <div class="eyebrow warn">What we learned</div>
+  <h2 class="title">The spike series: two falsifications, one convergence</h2>
+  <p class="lead">
+    Phases 17 and 18 together mapped the boundary of what can and cannot be extracted
+    from NQ opening spike behavior using systematic confirmation-based entry. Both
+    phases tested real and documented behavioral patterns. Both were ultimately
+    insufficient.
+  </p>
+
+  <h3 class="sh">What Phase 17 and 18 confirm</h3>
+  <p class="body">
+    The opening 5-minute spike in NQ is a consistent, measurable phenomenon. 85–86%
+    of sessions produce a spike larger than 1.5× the 1-minute ATR. Price returns to
+    the spike extreme in 93% of qualifying sessions. The level acts as a genuine
+    magnetic anchor for the first two hours of trading.
+  </p>
+  <p class="body">
+    This is consistent with widely observed market behavior: the opening spike sweeps
+    one side of liquidity, trapping participants, and the subsequent reversal is fueled
+    by those exits. The pattern is real. The question was whether a systematic entry
+    can capture it profitably.
+  </p>
+
+  <h3 class="sh">Phase 17 → Phase 18: what the fix accomplished</h3>
+  <div class="phase-compare">
+    <div class="verdict fail">
+      <div class="verdict-lbl">Phase 17 — Geometry failure</div>
+      <p>SL at spike extreme. Entry between SL and TP. Median R/R 0.50 (TP-A), 0.86 (TP-B). Structural negative expectancy — no parameter can fix it. Diagnostic failed.</p>
+    </div>
+    <div class="verdict warn">
+      <div class="verdict-lbl">Phase 18 — WR failure</div>
+      <p>ATR-based SL. Median R/R 1.78 (TP-A), 3.09 (TP-B). Diagnostic passed. But OOS WR of 23.4% vs 35.7% in training — costs still win.</p>
+    </div>
+  </div>
+  <p class="body">
+    Phase 18 made the correct change and it worked geometrically. The constraint
+    shifted from "geometry is broken" to "WR is insufficient." This is progress —
+    the failure mode changed from structural to empirical.
+  </p>
+
+  <h3 class="sh">The OOS WR collapse — what likely explains it</h3>
+  <div class="callout warn">
+    <strong>2025 volatility regime shift:</strong> The test period (2025–2026) shows
+    broader ATRs than the training period. A wider ATR means: (1) larger SL distance
+    → more adverse excursion before stop is hit; (2) TP-A (session_open) is not
+    proportionally farther → effective R/R shrinks; (3) the break-even WR rises.
+    The rejection bar signal may fire at the right level but the market no longer
+    follows through at the rate required for profitability under wider intraday ranges.
+  </div>
+  <p class="body">
+    A regime-conditional version — only trading when ATR is below a threshold, or
+    when daily range is in a favorable regime — was not tested in Phase 18. This
+    is a viable next hypothesis if the spike series were to continue.
+  </p>
+
+  <h3 class="sh">What to try if the series continues</h3>
+  <div class="rulebox">
+    <div class="rulebox-head">Potential extensions (not tested)</div>
+    <div class="rulebox-body">
+      <div class="rule"><span class="rule-n">1</span><span><strong>Regime filter on ATR:</strong> only trade when daily ATR is below rolling 20-day median. Avoids high-vol regimes that shrink effective R/R.</span></div>
+      <div class="rule"><span class="rule-n">2</span><span><strong>Pre-spike entry:</strong> enter a limit at the spike extreme BEFORE price returns. Requires a prediction model (direction of next spike) — a different hypothesis.</span></div>
+      <div class="rule"><span class="rule-n">3</span><span><strong>Scalable SL:</strong> SL = 0.5×ATR instead of 1.0×ATR. Tighter stop with same TP increases R/R — but likely lowers WR further. Needs testing.</span></div>
+      <div class="rule"><span class="rule-n">4</span><span><strong>Session type filter:</strong> condition on overnight range, news day, or implied volatility. Spike behavior may differ across session types.</span></div>
+    </div>
+  </div>
+
+  <h3 class="sh">Broader lessons for the research series</h3>
+  <p class="body">
+    The spike series produced the most informative pair of falsifications in the
+    research. Each phase identified a specific, fixable flaw. Phase 17's flaw
+    (geometry) was fixed. Phase 18's flaw (OOS WR) points at regime sensitivity
+    rather than a logical error. This is the normal progression of systematic
+    research: hypothesis → explicit failure → refined hypothesis.
+  </p>
+  <p class="body">
+    The POC Reversion strategy (Phase 15 B1) remains the only confirmed edge in the
+    series: p=0.066, bootstrap p5=0.999, 4/5 WFO windows PF &gt;1.0. The spike series
+    confirms that not all real behavioral patterns are extractable with systematic
+    confirmation-based entries — some patterns require prediction rather than
+    confirmation, or are only profitable in specific volatility regimes.
+  </p>
+
+  <div class="verdict pivot">
+    <div class="verdict-lbl">Key insight from the spike series</div>
+    <p>The opening spike level is a real structural anchor (93% retest rate, 82% rejection rate). The edge, if it exists, requires either: (a) prediction of spike direction before it forms, (b) regime conditioning to avoid high-ATR periods, or (c) a fundamentally different entry mechanism than the rejection bar. Confirmation-based entry after the fact is one step too late in the current volatility environment.</p>
+  </div>
+</div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div>
+    <strong>NQ Quantitative Research</strong> — Systematic research on NQ E-mini Futures futures (2021–2026).
+  </div>
+  <div>
+    <a href="index.html" style="color:var(--blue);text-decoration:none;">← Research Hub</a>
+    &nbsp;·&nbsp;
+    <a href="orb_research.html" style="color:var(--blue);text-decoration:none;">ORB (Ph. 1–7)</a>
+    &nbsp;·&nbsp;
+    <a href="vwap_research.html" style="color:var(--blue);text-decoration:none;">VWAP (Ph. 8–10)</a>
+    &nbsp;·&nbsp;
+    <a href="poc_research.html" style="color:var(--blue);text-decoration:none;">POC (Ph. 11–16)</a>
+    &nbsp;·&nbsp;
+    <a href="failed_spike_research.html" style="color:var(--blue);text-decoration:none;">Failed Spike (Ph. 17)</a>
+  </div>
+</footer>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>
