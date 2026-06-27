@@ -12,13 +12,21 @@ and bootstrap Monte Carlo sizing.
 
 | Research | Description | Result |
 |---|---|---|
-| [NQ ORB + HMM](docs/index.html) | Opening Range Breakout with HMM regime routing · Phases 1–7 | Edge confirmed · Sharpe +1.298 OOS |
+| [NQ ORB + HMM](docs/orb_research.html) | Opening Range Breakout with HMM regime routing · Phases 1–7 | Edge confirmed · Sharpe +1.298 OOS |
 | [NQ VWAP](docs/vwap_research.html) | VWAP as trading signal · two hypotheses falsified · Phases 8–10 | No edge · 90.7% of crossovers revert |
 | [POC Reversion](docs/poc_research.html) | Volume Profile POC mean reversion · deterministic filters · Phases 11–16 | Edge confirmed · p=0.066 · bootstrap p5=0.999 |
 
-Interactive documentation with full phase-by-phase results, equity curves, and parameter tables:
+Interactive documentation with full phase-by-phase results, equity curves, and parameter tables.
 
-**[View on GitHub Pages](https://s4g4cr.github.io/nq-quant-research/)**
+All three are accessible from the research hub:
+
+**[Research Hub — s4g4cr.github.io/nq-quant-research](https://s4g4cr.github.io/nq-quant-research/)**
+
+| Direct links | |
+|---|---|
+| ORB + HMM (Phases 1–7) | [s4g4cr.github.io/nq-quant-research/orb_research.html](https://s4g4cr.github.io/nq-quant-research/orb_research.html) |
+| VWAP Signals (Phases 8–10) | [s4g4cr.github.io/nq-quant-research/vwap_research.html](https://s4g4cr.github.io/nq-quant-research/vwap_research.html) |
+| POC Reversion (Phases 11–16) | [s4g4cr.github.io/nq-quant-research/poc_research.html](https://s4g4cr.github.io/nq-quant-research/poc_research.html) |
 
 ---
 
@@ -77,7 +85,8 @@ nq-quant-research/
 │   ├── strategy/
 │   └── regime/
 ├── docs/
-│   ├── index.html           — ORB + HMM research (Phases 1–7)
+│   ├── index.html           — Research hub (landing page, links to all three)
+│   ├── orb_research.html    — ORB + HMM research (Phases 1–7)
 │   ├── vwap_research.html   — VWAP research (Phases 8–10)
 │   └── poc_research.html    — POC Reversion research (Phases 11–16)
 └── run_phase*.py            — phase entry-points
