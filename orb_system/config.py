@@ -122,6 +122,19 @@ class HMMConfig:
 
 
 @dataclass
+class VWAPConfig:
+    """VWAP Reversion / Breakout strategy parameters (Phase 8)."""
+    deviation_mult: float = 1.5    # entry when |price - VWAP| > N × ATR
+    candle_mult:    float = 0.8    # confirmation bar range > N × ATR
+    volume_mult:    float = 1.2    # confirmation bar volume > N × avg_vol
+    sl_mult:        float = 0.5    # SL = entry ± sl_mult × ATR
+    max_bars:       int   = 90     # timeout in 1-min bars (~1.5 hours)
+    time_start:     str   = "10:00"
+    time_end:       str   = "14:30"
+    hmm_filter:     bool  = True   # restrict to ranging regime only
+
+
+@dataclass
 class Config:
     """Master configuration object."""
     data: DataConfig = field(default_factory=DataConfig)
@@ -132,6 +145,7 @@ class Config:
     backtest: BacktestConfig = field(default_factory=BacktestConfig)
     mr: MRConfig = field(default_factory=MRConfig)
     hmm: HMMConfig = field(default_factory=HMMConfig)
+    vwap: VWAPConfig = field(default_factory=VWAPConfig)
 
     def summary(self) -> None:
         """Print full configuration summary."""
