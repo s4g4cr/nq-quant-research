@@ -15,6 +15,7 @@ and bootstrap Monte Carlo sizing.
 | [NQ ORB + HMM](docs/orb_research.html) | Opening Range Breakout with HMM regime routing · Phases 1–7 | Edge confirmed · Sharpe +1.298 OOS |
 | [NQ VWAP](docs/vwap_research.html) | VWAP as trading signal · two hypotheses falsified · Phases 8–10 | No edge · 90.7% of crossovers revert |
 | [POC Reversion](docs/poc_research.html) | Volume Profile POC mean reversion · deterministic filters · Phases 11–16 | Edge confirmed · p=0.066 · bootstrap p5=0.999 |
+| [Failed Spike Reversion](docs/failed_spike_research.html) | Opening 5-min spike failure fade · Phase 17 | No edge · reversion real (71.3%) but entry geometry structurally negative |
 
 Interactive documentation with full phase-by-phase results, equity curves, and parameter tables.
 
@@ -27,6 +28,7 @@ All three are accessible from the research hub:
 | ORB + HMM (Phases 1–7) | [s4g4cr.github.io/nq-quant-research/orb_research.html](https://s4g4cr.github.io/nq-quant-research/orb_research.html) |
 | VWAP Signals (Phases 8–10) | [s4g4cr.github.io/nq-quant-research/vwap_research.html](https://s4g4cr.github.io/nq-quant-research/vwap_research.html) |
 | POC Reversion (Phases 11–16) | [s4g4cr.github.io/nq-quant-research/poc_research.html](https://s4g4cr.github.io/nq-quant-research/poc_research.html) |
+| Failed Spike (Phase 17) | [s4g4cr.github.io/nq-quant-research/failed_spike_research.html](https://s4g4cr.github.io/nq-quant-research/failed_spike_research.html) |
 
 ---
 
@@ -71,7 +73,8 @@ nq-quant-research/
 │   ├── orb.py               — ORB breakout signal engine (Phases 1–7)
 │   ├── vwap_reversion.py    — VWAP reversion engine (Phase 8, falsified)
 │   ├── vwap_breakout.py     — VWAP breakout engine (Phase 9, falsified)
-│   └── poc_reversion.py     — POC mean reversion engine (Phases 11–16, CONFIRMED)
+│   ├── poc_reversion.py     — POC mean reversion engine (Phases 11–16, CONFIRMED)
+│   └── failed_spike.py      — Failed spike reversion engine (Phase 17, falsified)
 ├── indicators/
 │   ├── technical.py         — ATR, VWAP, rolling indicators
 │   └── volume_profile.py    — prev_poc and session_poc (strictly causal)
@@ -85,10 +88,11 @@ nq-quant-research/
 │   ├── strategy/
 │   └── regime/
 ├── docs/
-│   ├── index.html           — Research hub (landing page, links to all three)
-│   ├── orb_research.html    — ORB + HMM research (Phases 1–7)
-│   ├── vwap_research.html   — VWAP research (Phases 8–10)
-│   └── poc_research.html    — POC Reversion research (Phases 11–16)
+│   ├── index.html                  — Research hub (landing page, links to all four)
+│   ├── orb_research.html           — ORB + HMM research (Phases 1–7)
+│   ├── vwap_research.html          — VWAP research (Phases 8–10)
+│   ├── poc_research.html           — POC Reversion research (Phases 11–16)
+│   └── failed_spike_research.html  — Failed Spike research (Phase 17)
 └── run_phase*.py            — phase entry-points
 ```
 
@@ -146,6 +150,9 @@ python run_phase14.py
 python run_phase15.py
 python run_phase15_B1.py
 python run_phase16.py
+
+# Failed Spike Reversion research (Phase 17)
+python run_phase17.py
 ```
 
 ---
