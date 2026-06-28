@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NQ POC Closing Magnet Research — Quantitative Trading Research</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: #fafafa;
+  color: #111;
+  line-height: 1.6;
+}
+img { display: block; max-width: 100%; }
+
+:root {
+  --blue:    #0066FF;
+  --blue-10: #e6f0ff;
+  --amber:   #b45309;
+  --amber-10:#fef9c3;
+  --ink:     #111111;
+  --ink-2:   #444444;
+  --ink-3:   #888888;
+  --ink-4:   #bbbbbb;
+  --line:    #e5e5e5;
+  --bg:      #fafafa;
+  --surface: #ffffff;
+  --green:   #16a34a;
+  --red:     #dc2626;
+  --mono:    'Menlo', 'Consolas', monospace;
+  --r2: 4px;
+  --r3: 6px;
+}
+
+.hdr {
+  position: sticky; top: 0; z-index: 200;
+  background: rgba(250,250,250,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+  height: 52px;
+  display: flex; align-items: center;
+  padding: 0 32px; gap: 40px;
+}
+.hdr-logo {
+  font-size: 13px; font-weight: 600; color: var(--ink);
+  letter-spacing: -0.01em; white-space: nowrap;
+  display: flex; align-items: center; gap: 8px;
+  text-decoration: none;
+}
+.hdr-logo-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--amber); }
+.hdr-series {
+  font-size: 12px; color: var(--ink-3);
+  border-left: 1px solid var(--line);
+  padding-left: 16px; white-space: nowrap;
+}
+.hdr-series a { color: var(--blue); text-decoration: none; font-weight: 500; }
+.hdr-series a:hover { text-decoration: underline; }
+.hdr-tabs {
+  display: flex; gap: 2px; overflow-x: auto;
+  scrollbar-width: none; flex: 1;
+}
+.hdr-tabs::-webkit-scrollbar { display: none; }
+.tab {
+  flex-shrink: 0;
+  background: none; border: none; cursor: pointer;
+  padding: 6px 12px; border-radius: var(--r2);
+  font-size: 13px; font-weight: 400; color: var(--ink-3);
+  transition: color 120ms, background 120ms;
+  white-space: nowrap; display: flex; align-items: center; gap: 6px;
+}
+.tab:hover { color: var(--ink); background: #f0f0f0; }
+.tab.active { color: var(--ink); font-weight: 500; background: #ebebeb; }
+.tab-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.dot-fail    { background: var(--red); }
+.dot-warn    { background: var(--amber); }
+.dot-neutral { background: var(--ink-4); }
+.dot-info    { background: var(--blue); }
+
+.hero {
+  padding: 64px 32px 48px;
+  max-width: 1120px; margin: 0 auto;
+  border-bottom: 1px solid var(--line);
+}
+.hero-series {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-3);
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-series::before {
+  content: ''; display: inline-block;
+  width: 20px; height: 1px; background: var(--ink-4);
+}
+.hero-label {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--amber); margin-bottom: 16px;
+}
+.hero-title {
+  font-size: clamp(28px, 4vw, 48px);
+  font-weight: 500; letter-spacing: -0.03em; line-height: 1.1;
+  color: var(--ink); max-width: 680px; margin-bottom: 16px;
+}
+.hero-sub {
+  font-size: 16px; color: var(--ink-2); max-width: 560px;
+  line-height: 1.65; margin-bottom: 40px; font-weight: 300;
+}
+.hero-expectancy {
+  background: white; border: 1px solid var(--line);
+  border-radius: var(--r3); overflow: hidden;
+  max-width: 720px; margin-bottom: 40px;
+}
+.he-header {
+  padding: 12px 16px; background: #fafafa;
+  border-bottom: 1px solid var(--line);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.he-title { font-size: 12px; font-weight: 600; color: var(--ink-2); letter-spacing: 0.02em; }
+.he-sub { font-size: 11px; color: var(--ink-3); }
+.he-row {
+  display: grid;
+  grid-template-columns: 160px 80px 80px 1fr 80px;
+  padding: 9px 16px; border-bottom: 1px solid #f5f5f5;
+  align-items: center; gap: 8px;
+}
+.he-row:last-child { border-bottom: none; }
+.he-row.header-row { background: #f7f7f7; border-bottom: 1px solid var(--line); }
+.he-cell { font-family: var(--mono); font-size: 12px; color: var(--ink-2); }
+.he-cell.label { font-size: 11px; color: var(--ink-3); font-family: inherit; letter-spacing: 0.05em; text-transform: uppercase; }
+.he-cell.neg { color: var(--red); }
+.he-cell.pos { color: var(--green); }
+.he-cell.bold { font-weight: 600; color: var(--ink); }
+.he-bar { height: 4px; background: #f0f0f0; border-radius: 2px; overflow: hidden; }
+.he-bar-fill { height: 100%; border-radius: 2px; background: var(--red); }
+.he-bar-fill.pos { background: var(--green); }
+.hero-finding {
+  background: var(--amber-10); border: 1px solid #fde68a;
+  border-left: 3px solid var(--amber); border-radius: var(--r3);
+  padding: 14px 18px; font-size: 14px; color: #78350f;
+  line-height: 1.6; max-width: 720px;
+}
+.hero-finding strong { font-weight: 600; }
+
+.panel { display: none; }
+.panel.active { display: block; }
+
+.content {
+  max-width: 1120px; margin: 0 auto;
+  padding: 48px 32px 96px;
+}
+.layout-2col {
+  display: grid; grid-template-columns: 1fr 320px; gap: 64px;
+  align-items: start;
+}
+.layout-full { max-width: 720px; }
+
+.eyebrow {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase; margin-bottom: 12px;
+}
+.eyebrow.fail    { color: var(--red); }
+.eyebrow.warn    { color: var(--amber); }
+.eyebrow.neutral { color: var(--ink-3); }
+.eyebrow.info    { color: var(--blue); }
+
+h2.title {
+  font-size: 26px; font-weight: 600; letter-spacing: -0.02em;
+  line-height: 1.2; color: var(--ink); margin-bottom: 16px;
+}
+h3.sh {
+  font-size: 14px; font-weight: 600; color: var(--ink);
+  margin: 40px 0 12px; padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+p.lead {
+  font-size: 16px; color: var(--ink-2); line-height: 1.7;
+  margin-bottom: 16px; font-weight: 300;
+}
+p.body {
+  font-size: 14px; color: var(--ink-2); line-height: 1.75;
+  margin-bottom: 14px;
+}
+
+.sidebar {
+  position: sticky; top: 68px;
+  border: 1px solid var(--line); border-radius: var(--r3);
+  overflow: hidden; background: var(--surface);
+}
+.sb-head {
+  padding: 12px 16px; border-bottom: 1px solid var(--line);
+  background: #f7f7f7;
+}
+.sb-head-label {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--ink-3);
+}
+.sb-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 9px 16px; border-bottom: 1px solid #f0f0f0; gap: 16px;
+}
+.sb-row:last-child { border-bottom: none; }
+.sb-key { font-size: 12px; color: var(--ink-3); white-space: nowrap; }
+.sb-val { font-family: var(--mono); font-size: 12px; color: var(--ink); font-weight: 500; white-space: nowrap; }
+.sb-val.pos  { color: var(--green); }
+.sb-val.neg  { color: var(--red); }
+.sb-val.warn { color: var(--amber); }
+.sb-val.info { color: var(--blue); }
+
+.tbl-outer {
+  border: 1px solid var(--line); border-radius: var(--r3);
+  overflow: hidden; margin: 24px 0;
+}
+.tbl-outer table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tbl-outer thead { background: #f7f7f7; }
+.tbl-outer th {
+  padding: 9px 14px; text-align: left;
+  font-family: var(--mono); font-size: 10px; font-weight: 500;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3);
+  border-bottom: 1px solid var(--line); white-space: nowrap;
+}
+.tbl-outer td {
+  padding: 9px 14px; border-bottom: 1px solid #f0f0f0;
+  color: var(--ink-2); vertical-align: top;
+}
+.tbl-outer tr:last-child td { border-bottom: none; }
+.tbl-outer tr:hover td { background: #fafafa; }
+td.pos  { color: var(--green); font-weight: 500; }
+td.neg  { color: var(--red); font-weight: 500; }
+td.warn { color: var(--amber); font-weight: 500; }
+td.bold { color: var(--ink); font-weight: 600; }
+td.mono { font-family: var(--mono); font-size: 12px; }
+
+.rulebox {
+  border: 1px solid var(--line); border-radius: var(--r3);
+  overflow: hidden; margin: 20px 0;
+}
+.rulebox-head {
+  padding: 10px 16px; background: #f7f7f7;
+  border-bottom: 1px solid var(--line);
+  font-size: 11px; font-weight: 600; color: var(--ink-2);
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+.rulebox-body { padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.rule {
+  display: flex; gap: 10px; align-items: flex-start;
+  font-size: 13px; color: var(--ink-2); line-height: 1.5;
+}
+.rule-n {
+  font-family: var(--mono); font-size: 11px; color: var(--blue);
+  flex-shrink: 0; width: 18px; padding-top: 1px;
+}
+
+.callout {
+  border-radius: var(--r3); padding: 16px 20px;
+  margin: 20px 0; font-size: 14px; line-height: 1.65;
+  border-left: 3px solid;
+}
+.callout.info    { background: var(--blue-10); border-color: var(--blue); color: #003d99; }
+.callout.warn    { background: var(--amber-10); border-color: var(--amber); color: #78350f; }
+.callout.danger  { background: #fff1f2; border-color: var(--red); color: #991b1b; }
+.callout.success { background: #f0fdf4; border-color: var(--green); color: #14532d; }
+.callout strong  { font-weight: 600; }
+
+.verdict {
+  border-radius: var(--r3); padding: 16px 20px;
+  margin: 24px 0; border: 1px solid;
+}
+.verdict.pass   { border-color: #bbf7d0; background: #f0fdf4; }
+.verdict.fail   { border-color: #fecaca; background: #fff1f2; }
+.verdict.warn   { border-color: #fde68a; background: #fffbeb; }
+.verdict.pivot  { border-color: #bfdbfe; background: #eff6ff; }
+.verdict-lbl {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
+  text-transform: uppercase; margin-bottom: 6px;
+}
+.verdict.pass  .verdict-lbl { color: var(--green); }
+.verdict.fail  .verdict-lbl { color: var(--red); }
+.verdict.warn  .verdict-lbl { color: var(--amber); }
+.verdict.pivot .verdict-lbl { color: var(--blue); }
+.verdict p { font-size: 14px; color: var(--ink-2); margin: 0; line-height: 1.6; }
+
+.mstrip {
+  display: grid; gap: 1px; background: var(--line);
+  border: 1px solid var(--line); border-radius: var(--r3);
+  overflow: hidden; margin: 24px 0;
+}
+.mstrip-inner {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1px; background: var(--line);
+}
+.mitem { background: var(--surface); padding: 16px 20px; }
+.mitem-val {
+  font-size: 24px; font-weight: 600; letter-spacing: -0.02em;
+  line-height: 1; margin-bottom: 4px;
+}
+.mitem-val.pos  { color: var(--green); }
+.mitem-val.neg  { color: var(--red); }
+.mitem-val.warn { color: var(--amber); }
+.mitem-val.info { color: var(--blue); }
+.mitem-key { font-size: 11px; color: var(--ink-3); font-weight: 400; }
+
+.divider { border: none; border-top: 1px solid var(--line); margin: 40px 0; }
+
+.footer {
+  border-top: 1px solid var(--line);
+  padding: 32px;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 16px;
+  font-size: 12px; color: var(--ink-3);
+}
+.footer strong { color: var(--ink-2); font-weight: 500; }
+
+@media (max-width: 860px) {
+  .hdr { padding: 0 16px; gap: 12px; }
+  .hdr-series { display: none; }
+  .hero { padding: 40px 16px 32px; }
+  .content { padding: 32px 16px 64px; }
+  .layout-2col { grid-template-columns: 1fr; }
+  .sidebar { position: static; }
+  .he-row { grid-template-columns: 120px 64px 64px 1fr 64px; }
+  .footer { padding: 24px 16px; flex-direction: column; align-items: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <a class="hdr-logo" href="#">
+    <div class="hdr-logo-dot"></div>
+    NQ POC Closing Magnet Research
+  </a>
+  <div class="hdr-series">
+    Part of <a href="https://s4g4cr.github.io/nq-quant-research/">NQ Quantitative Research Series</a>
+  </div>
+  <nav class="hdr-tabs" role="tablist">
+    <button class="tab active" onclick="show('hypothesis',this)">
+      <span class="tab-dot dot-neutral"></span>The Hypothesis
+    </button>
+    <button class="tab" onclick="show('diagnostic',this)">
+      <span class="tab-dot dot-info"></span>Diagnostic
+    </button>
+    <button class="tab" onclick="show('results',this)">
+      <span class="tab-dot dot-fail"></span>Results
+    </button>
+    <button class="tab" onclick="show('conclusions',this)">
+      <span class="tab-dot dot-warn"></span>Conclusions
+    </button>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-series">NQ Quantitative Research · Phase 20</div>
+  <div class="hero-label">Research concluded · Not confirmed · WFO failed 2/5 windows</div>
+  <h1 class="hero-title">POC as a closing-hour magnet in NQ futures</h1>
+  <p class="hero-sub">
+    Testing whether the gravitational pull of the Volume Profile Point of Control
+    strengthens specifically in the last hour (15:00–16:00) as institutional
+    participants rebalance before close. Three POC variants and three entry conditions
+    tested across 9 experiment combinations.
+  </p>
+
+  <div class="hero-expectancy">
+    <div class="he-header">
+      <span class="he-title">Theoretical expectancy by POC variant — Phase 20 diagnostic</span>
+      <span class="he-sub">Pure price · no slippage or commission · all sessions</span>
+    </div>
+    <div class="he-row header-row">
+      <span class="he-cell label">POC Variant</span>
+      <span class="he-cell label">WR%</span>
+      <span class="he-cell label">Med R/R</span>
+      <span class="he-cell label">Expectancy</span>
+      <span class="he-cell label">Result</span>
+    </div>
+    <div class="he-row">
+      <span class="he-cell">POC-A · session_poc</span>
+      <span class="he-cell">36.4%</span>
+      <span class="he-cell">8.42</span>
+      <span class="he-cell">
+        <div class="he-bar"><div class="he-bar-fill pos" style="width:28%"></div></div>
+      </span>
+      <span class="he-cell pos">+0.241</span>
+    </div>
+    <div class="he-row">
+      <span class="he-cell bold">POC-B · prev_poc</span>
+      <span class="he-cell bold">36.4%</span>
+      <span class="he-cell bold">15.26</span>
+      <span class="he-cell">
+        <div class="he-bar"><div class="he-bar-fill pos" style="width:40%"></div></div>
+      </span>
+      <span class="he-cell pos bold">+0.353</span>
+    </div>
+    <div class="he-row">
+      <span class="he-cell">POC-C · nearest_poc</span>
+      <span class="he-cell">36.4%</span>
+      <span class="he-cell">9.87</span>
+      <span class="he-cell">
+        <div class="he-bar"><div class="he-bar-fill pos" style="width:32%"></div></div>
+      </span>
+      <span class="he-cell pos">+0.282</span>
+    </div>
+  </div>
+
+  <div class="hero-finding">
+    <strong>Key finding:</strong> The closing magnet is real — 36.4% of sessions naturally
+    revert to the POC before 15:59, and theoretical expectancy is positive across all three
+    POC variants. The problem is durability: simple displacement (entering because price
+    is above/below POC at 15:00) does not produce consistent follow-through across
+    time windows. Walk-forward failed all thresholds (p=0.48, bootstrap p5=0.84, 2/5 windows).
+  </div>
+</section>
+
+<!-- ═══ HYPOTHESIS ═══ -->
+<div class="panel active" id="panel-hypothesis">
+<div class="content">
+  <div class="layout-2col">
+    <div>
+      <div class="eyebrow neutral">Research context</div>
+      <h2 class="title">Building on confirmed POC reversion — does the pull strengthen at close?</h2>
+      <p class="lead">
+        Phases 11–15 confirmed a statistically significant edge in POC mean reversion
+        during the main session (p=0.066, bootstrap p5=0.999). Phase 20 tests a specific
+        extension: whether the reversion force amplifies in the final hour as institutional
+        participants close intraday positions and rebalance before the settlement.
+      </p>
+      <p class="body">
+        The hypothesis is intuitive. Large intraday players who accumulated inventory
+        away from fair value have a natural incentive to reduce exposure before close.
+        The POC represents the highest-volume price level — the market's estimate of
+        fair value. If enough participants share this incentive, price should drift
+        toward the POC in the 15:00–16:00 window at a rate above the session average.
+      </p>
+
+      <h3 class="sh">Three POC variants</h3>
+      <div class="rulebox">
+        <div class="rulebox-head">POC definitions (all computed causally, no lookahead)</div>
+        <div class="rulebox-body">
+          <div class="rule"><span class="rule-n">A</span><span><strong>session_poc</strong> — rolling intraday POC from 09:30 to 14:59, updated bar-by-bar. Reflects the current session's fair value estimate as it evolves.</span></div>
+          <div class="rule"><span class="rule-n">B</span><span><strong>prev_poc</strong> — prior complete session POC, fully formed before the current session opens. Fixed at session open, no intraday update.</span></div>
+          <div class="rule"><span class="rule-n">C</span><span><strong>nearest_poc</strong> — whichever of A or B is closer to price at 15:00. Adapts to the most relevant reference level at entry time.</span></div>
+        </div>
+      </div>
+
+      <h3 class="sh">Three entry conditions</h3>
+      <div class="rulebox">
+        <div class="rulebox-head">Entry filters tested across all three POC variants (9 experiments total)</div>
+        <div class="rulebox-body">
+          <div class="rule"><span class="rule-n">1</span><span><strong>Distance + momentum:</strong> price &gt; 1.0 ATR from POC at 14:59, and last bar is moving toward POC (1-bar momentum in direction of POC). Requires both displacement and directional confirmation.</span></div>
+          <div class="rule"><span class="rule-n">2</span><span><strong>VWAP cross:</strong> VWAP crosses through the POC level between 14:45 and 15:00 in the direction of expected reversion. Low frequency (16.7% of sessions) but strong directional signal.</span></div>
+          <div class="rule"><span class="rule-n">3</span><span><strong>Simple displacement:</strong> enter if price is above POC (SHORT) or below POC (LONG) at 15:00:00. No additional confirmation. Fires on nearly every session (99.9%).</span></div>
+        </div>
+      </div>
+
+      <h3 class="sh">Risk management (all experiments)</h3>
+      <div class="rulebox">
+        <div class="rulebox-head">Fixed parameters across all 9 experiments</div>
+        <div class="rulebox-body">
+          <div class="rule"><span class="rule-n">TP</span><span><strong>Target POC</strong> — fixed at entry price, not updated intraday</span></div>
+          <div class="rule"><span class="rule-n">SL</span><span><strong>1.0 × ATR_1min</strong> at entry bar — same ATR-based SL validated in Phase 18</span></div>
+          <div class="rule"><span class="rule-n">Exit</span><span><strong>Hard exit at 15:59</strong> NY — no overnight holds, all positions closed</span></div>
+          <div class="rule"><span class="rule-n">Size</span><span><strong>risk_pct = 1.0%</strong> of capital per trade · position sizing proportional</span></div>
+          <div class="rule"><span class="rule-n">Slip</span><span>0.25 pts/side · commission $4 RT / contract</span></div>
+        </div>
+      </div>
+
+      <div class="callout info">
+        <strong>Relationship to Phase 15 B1:</strong> Phase 20 is not a continuation of
+        Phase 15 — it tests a separate, time-specific hypothesis. Phase 15 B1 operates
+        during the main session (09:30–14:59) with a confirmed edge. Phase 20 asks whether
+        a separate closing-hour effect exists. Both hypotheses can be true simultaneously.
+      </div>
+    </div>
+
+    <div>
+      <div class="sidebar">
+        <div class="sb-head"><div class="sb-head-label">Research scope</div></div>
+        <div class="sb-row"><span class="sb-key">Phase</span><span class="sb-val">20</span></div>
+        <div class="sb-row"><span class="sb-key">Asset</span><span class="sb-val">NQ E-mini Futures</span></div>
+        <div class="sb-row"><span class="sb-key">Entry window</span><span class="sb-val">15:00 NY</span></div>
+        <div class="sb-row"><span class="sb-key">Hard exit</span><span class="sb-val">15:59 NY</span></div>
+        <div class="sb-row"><span class="sb-key">Dataset</span><span class="sb-val">2021-06-25 to 2026-06-17</span></div>
+        <div class="sb-row"><span class="sb-key">Experiments</span><span class="sb-val">9 (3 POC × 3 entry)</span></div>
+        <div class="sb-head" style="border-top:1px solid var(--line)"><div class="sb-head-label">Diagnostic findings</div></div>
+        <div class="sb-row"><span class="sb-key">Displacement &gt;1.0 ATR</span><span class="sb-val warn">83.2%</span></div>
+        <div class="sb-row"><span class="sb-key">Natural reversion rate</span><span class="sb-val warn">36.4%</span></div>
+        <div class="sb-row"><span class="sb-key">Best POC (theoretical)</span><span class="sb-val pos">POC-B +0.353</span></div>
+        <div class="sb-row"><span class="sb-key">VWAP cross freq.</span><span class="sb-val info">16.7%</span></div>
+        <div class="sb-row"><span class="sb-key">Simple disp. freq.</span><span class="sb-val warn">99.9%</span></div>
+        <div class="sb-head" style="border-top:1px solid var(--line)"><div class="sb-head-label">Best result (Exp 5)</div></div>
+        <div class="sb-row"><span class="sb-key">Config</span><span class="sb-val">POC-B + VWAP cross</span></div>
+        <div class="sb-row"><span class="sb-key">N test</span><span class="sb-val warn">67</span></div>
+        <div class="sb-row"><span class="sb-key">PF test</span><span class="sb-val warn">1.282</span></div>
+        <div class="sb-row"><span class="sb-key">SR test</span><span class="sb-val pos">+1.205</span></div>
+        <div class="sb-head" style="border-top:1px solid var(--line)"><div class="sb-head-label">Walk-forward (Exp 3)</div></div>
+        <div class="sb-row"><span class="sb-key">Windows PF &gt; 1.0</span><span class="sb-val neg">2 / 5</span></div>
+        <div class="sb-row"><span class="sb-key">T-test p (1-sided)</span><span class="sb-val neg">0.4812</span></div>
+        <div class="sb-row"><span class="sb-key">Bootstrap p5</span><span class="sb-val neg">0.8392</span></div>
+        <div class="sb-row"><span class="sb-key">WFO verdict</span><span class="sb-val neg">Not confirmed</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ DIAGNOSTIC ═══ -->
+<div class="panel" id="panel-diagnostic">
+<div class="content layout-full">
+  <div class="eyebrow info">Phase 20 · Diagnostic</div>
+  <h2 class="title">The closing magnet exists — but weakly</h2>
+  <p class="lead">
+    The pre-P&amp;L diagnostic confirms that a closing-hour POC pull exists in the data.
+    36.4% of sessions naturally close within 1 ATR of their POC before 15:59.
+    Theoretical expectancy is positive for all three POC variants, with POC-B (prev_poc)
+    showing the strongest signal at +0.353 expected R.
+  </p>
+
+  <h3 class="sh">Signal frequency by entry condition</h3>
+  <div class="mstrip">
+    <div class="mstrip-inner">
+      <div class="mitem">
+        <div class="mitem-val warn">83.2%</div>
+        <div class="mitem-key">Sessions displaced &gt;1.0 ATR from POC at 14:59</div>
+      </div>
+      <div class="mitem">
+        <div class="mitem-val warn">36.4%</div>
+        <div class="mitem-key">Natural reversion to POC before 15:59</div>
+      </div>
+      <div class="mitem">
+        <div class="mitem-val info">16.7%</div>
+        <div class="mitem-key">VWAP cross toward POC (14:45–15:00)</div>
+      </div>
+      <div class="mitem">
+        <div class="mitem-val warn">99.9%</div>
+        <div class="mitem-key">Simple displacement fire rate</div>
+      </div>
+    </div>
+  </div>
+
+  <p class="body">
+    The large gap between entry condition fire rates is the central structural finding
+    of the diagnostic. Simple displacement fires on essentially every session — it has
+    no selectivity and therefore cannot produce consistent edge. VWAP cross fires on
+    only 16.7% of sessions but provides actual directional confirmation: VWAP
+    crossing the POC level signals institutional participation in the reversion move.
+  </p>
+
+  <h3 class="sh">Theoretical expectancy (pure price, no costs)</h3>
+  <div class="tbl-outer">
+    <table>
+      <thead>
+        <tr><th>POC Variant</th><th>Win Rate</th><th>Med R/R</th><th>Avg R/R</th><th>Expectancy</th><th>Gate</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>POC-A · session_poc</td>
+          <td class="warn mono">36.4%</td>
+          <td class="mono">8.42</td>
+          <td class="mono">12.8</td>
+          <td class="pos mono">+0.241</td>
+          <td class="pos">Pass</td>
+        </tr>
+        <tr>
+          <td class="bold">POC-B · prev_poc</td>
+          <td class="warn mono bold">36.4%</td>
+          <td class="mono bold">15.26</td>
+          <td class="mono bold">18.4</td>
+          <td class="pos mono bold">+0.353</td>
+          <td class="pos bold">Pass</td>
+        </tr>
+        <tr>
+          <td>POC-C · nearest_poc</td>
+          <td class="warn mono">36.4%</td>
+          <td class="mono">9.87</td>
+          <td class="mono">14.1</td>
+          <td class="pos mono">+0.282</td>
+          <td class="pos">Pass</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="body">
+    The 36.4% win rate is identical across all three variants because the natural
+    reversion condition (does price reach POC before 15:59?) is the same event
+    regardless of which POC definition is used. The R/R differences arise from
+    POC distance at entry: prev_poc tends to be farther from price at 15:00
+    (having been set the previous day) giving a larger theoretical R/R when the
+    trade wins.
+  </p>
+
+  <div class="callout success">
+    <strong>Diagnostic gate: PASSED</strong> — all three POC variants show positive
+    theoretical expectancy. The closing magnet effect is real in aggregate.
+    Proceeding to experiments with all 9 configurations.
+  </div>
+
+  <h3 class="sh">Why the high R/R misleads</h3>
+  <p class="body">
+    Median R/R of 8–15 sounds extraordinary. The reason: for simple displacement
+    (Condition 3), SL = 1.0×ATR_1min ≈ 8–12 pts, while the POC might be 80–120 pts
+    away. The R/R is large by construction of the setup. But with 36.4% win rate
+    and wide SL, most trades hit SL within the first few minutes — the 59-minute
+    window is much shorter than the exit horizon implied by the R/R calculation.
+    Costs at this frequency erode theoretical expectancy rapidly in live conditions.
+  </p>
+
+  <div class="callout warn">
+    <strong>Structural limitation of simple displacement:</strong> Entering purely
+    because price is above/below POC at 15:00 — with no directional bar trigger
+    and no volume confirmation — means entering into any random position relative
+    to fair value. The 99.9% fire rate is the tell: a signal that fires on everything
+    is not a signal.
+  </div>
+</div>
+</div>
+
+<!-- ═══ RESULTS ═══ -->
+<div class="panel" id="panel-results">
+<div class="content">
+  <div class="layout-2col">
+    <div>
+      <div class="eyebrow fail">Phase 20 · Walk-forward failed</div>
+      <h2 class="title">Five experiments clear PF &gt; 1.0 — none survive walk-forward</h2>
+      <p class="lead">
+        Of nine experiments, five achieve PF &gt; 1.0 in the test period with the best
+        showing SR+1.205 (Exp 5: POC-B + VWAP cross, N=67). Walk-forward was triggered
+        on Exp 3 (simple displacement, N=357 — largest sample). The pooled OOS PF was
+        1.005 with p=0.4812.
+      </p>
+
+      <h3 class="sh">All 9 experiments — test period results</h3>
+      <div class="tbl-outer">
+        <table>
+          <thead>
+            <tr><th>Exp</th><th>POC</th><th>Entry</th><th>N test</th><th>WR%</th><th>PF test</th><th>SR test</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>A · session</td><td>dist+mom</td><td class="mono">293</td><td class="warn mono">52.2%</td><td class="warn mono">1.041</td><td class="warn mono">+0.209</td></tr>
+            <tr><td>2</td><td>A · session</td><td>VWAP cross</td><td class="mono">54</td><td class="warn mono">50.0%</td><td class="neg mono">0.924</td><td class="neg mono">−0.287</td></tr>
+            <tr><td class="bold">3</td><td class="bold">A · session</td><td class="bold">simple</td><td class="mono bold">357</td><td class="warn mono bold">51.8%</td><td class="warn mono bold">1.118</td><td class="warn mono bold">+0.557</td></tr>
+            <tr><td>4</td><td>B · prev</td><td>dist+mom</td><td class="mono">280</td><td class="warn mono">50.7%</td><td class="neg mono">0.988</td><td class="neg mono">−0.066</td></tr>
+            <tr><td class="bold">5</td><td class="bold">B · prev</td><td class="bold">VWAP cross</td><td class="mono bold warn">67</td><td class="warn mono bold">53.7%</td><td class="warn mono bold">1.282</td><td class="pos mono bold">+1.205</td></tr>
+            <tr><td>6</td><td>B · prev</td><td>simple</td><td class="mono">356</td><td class="warn mono">51.1%</td><td class="neg mono">0.997</td><td class="neg mono">−0.017</td></tr>
+            <tr><td>7</td><td>C · nearest</td><td>dist+mom</td><td class="mono">280</td><td class="warn mono">51.4%</td><td class="warn mono">1.001</td><td class="warn mono">+0.007</td></tr>
+            <tr><td>8</td><td>C · nearest</td><td>VWAP cross</td><td class="mono">57</td><td class="warn mono">50.9%</td><td class="neg mono">0.951</td><td class="neg mono">−0.179</td></tr>
+            <tr><td class="bold">9</td><td class="bold">C · nearest</td><td class="bold">simple</td><td class="mono bold">356</td><td class="warn mono bold">51.4%</td><td class="warn mono bold">1.106</td><td class="warn mono bold">+0.494</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="sh">Walk-forward — Exp 3 (simple displacement, session_poc)</h3>
+      <p class="body">
+        Exp 3 was selected for WFO: largest N (357 test trades), PF=1.118, SR=+0.557.
+        Five anchored windows, each re-training the POC computation on an expanding
+        in-sample set and evaluating on a 6-month OOS window.
+      </p>
+      <div class="tbl-outer">
+        <table>
+          <thead>
+            <tr><th>Window</th><th>OOS Period</th><th>N</th><th>PF</th><th>SR</th><th>Ret%</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>V1</td><td>2023-H1</td><td class="mono">71</td><td class="neg mono">0.622</td><td class="neg mono">−3.010</td><td class="neg">−27.4%</td></tr>
+            <tr><td>V2</td><td>2023-H2</td><td class="mono">68</td><td class="neg mono">0.906</td><td class="neg mono">−0.558</td><td class="neg">−5.3%</td></tr>
+            <tr><td>V3</td><td>2024-H1</td><td class="mono">70</td><td class="warn mono">1.165</td><td class="warn mono">+0.882</td><td class="pos">+8.4%</td></tr>
+            <tr><td>V4</td><td>2024-H2</td><td class="mono">73</td><td class="neg mono">0.876</td><td class="neg mono">−0.790</td><td class="neg">−7.8%</td></tr>
+            <tr><td>V5</td><td>2025–26</td><td class="mono">75</td><td class="warn mono">1.118</td><td class="warn mono">+0.557</td><td class="pos">+4.2%</td></tr>
+            <tr>
+              <td class="bold">Pooled</td>
+              <td class="bold">All OOS</td>
+              <td class="mono bold">357</td>
+              <td class="neg mono bold">1.005</td>
+              <td class="neg mono bold">−0.156</td>
+              <td class="neg bold">Not confirmed</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout danger">
+        <strong>V1 catastrophic: SR=−3.010, −27.4% return.</strong> Window 1 (2023-H1)
+        is far too severe to attribute to variance. In this window, simple displacement
+        worked badly in the wrong direction: price at 15:00 was displaced from POC and
+        continued away from it rather than reverting, suggesting a trending regime where
+        the closing-hour pull was completely absent. One catastrophic window is sufficient
+        to invalidate the strategy — it fails when markets are trending, which is
+        precisely when a reversion hypothesis is most dangerous.
+      </div>
+
+      <div class="tbl-outer">
+        <table>
+          <thead>
+            <tr><th>Statistical gate</th><th>Required</th><th>Achieved</th><th>Result</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>T-test p (1-sided)</td><td>&lt; 0.10</td><td class="neg mono">0.4812</td><td class="neg">Fail</td></tr>
+            <tr><td>Bootstrap PF p5</td><td>&gt; 0.95</td><td class="neg mono">0.8392</td><td class="neg">Fail</td></tr>
+            <tr><td>Windows PF &gt; 1.0</td><td>≥ 3 / 5</td><td class="neg mono">2 / 5</td><td class="neg">Fail</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="verdict fail">
+        <div class="verdict-lbl">Walk-forward verdict · Phase 20</div>
+        <p>Edge NOT confirmed. All three statistical gates failed. The pooled OOS PF of
+        1.005 is essentially break-even, and the p=0.4812 indicates zero evidence against
+        the null hypothesis (that the edge is zero). Simple displacement has no persistent
+        edge across time windows. The closing magnet exists in aggregate but is too weak
+        and regime-dependent to trade systematically with displacement alone.</p>
+      </div>
+    </div>
+
+    <div>
+      <div class="sidebar">
+        <div class="sb-head"><div class="sb-head-label">Why Exp 5 matters</div></div>
+        <div class="sb-row"><span class="sb-key">Config</span><span class="sb-val">POC-B + VWAP cross</span></div>
+        <div class="sb-row"><span class="sb-key">N test</span><span class="sb-val warn">67</span></div>
+        <div class="sb-row"><span class="sb-key">WR test</span><span class="sb-val warn">53.7%</span></div>
+        <div class="sb-row"><span class="sb-key">PF test</span><span class="sb-val warn">1.282</span></div>
+        <div class="sb-row"><span class="sb-key">SR test</span><span class="sb-val pos">+1.205</span></div>
+        <div class="sb-row"><span class="sb-key">WFO threshold</span><span class="sb-val neg">N &lt; 80 (not run)</span></div>
+        <div class="sb-head" style="border-top:1px solid var(--line)"><div class="sb-head-label">Root cause analysis</div></div>
+        <div class="sb-row"><span class="sb-key">V1 SR</span><span class="sb-val neg">−3.010</span></div>
+        <div class="sb-row"><span class="sb-key">V1 return</span><span class="sb-val neg">−27.4%</span></div>
+        <div class="sb-row"><span class="sb-key">Windows positive</span><span class="sb-val neg">2 / 5</span></div>
+        <div class="sb-row"><span class="sb-key">Root cause</span><span class="sb-val neg">Trending regime</span></div>
+        <div class="sb-head" style="border-top:1px solid var(--line)"><div class="sb-head-label">Statistical tests</div></div>
+        <div class="sb-row"><span class="sb-key">Pooled PF OOS</span><span class="sb-val neg">1.005</span></div>
+        <div class="sb-row"><span class="sb-key">p-value (1-sided)</span><span class="sb-val neg">0.4812</span></div>
+        <div class="sb-row"><span class="sb-key">Bootstrap p5</span><span class="sb-val neg">0.8392</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ CONCLUSIONS ═══ -->
+<div class="panel" id="panel-conclusions">
+<div class="content layout-full">
+  <div class="eyebrow warn">Phase 20 · Conclusions</div>
+  <h2 class="title">What this research established</h2>
+  <p class="lead">
+    Phase 20 maps the boundary between a real structural effect and a tradeable edge.
+    The closing-hour POC pull is real; systematic exploitation via displacement alone
+    is not possible without a regime filter or stronger entry confirmation.
+  </p>
+
+  <h3 class="sh">Confirmed by the data</h3>
+  <div class="rulebox">
+    <div class="rulebox-head">Findings that hold across the full dataset</div>
+    <div class="rulebox-body">
+      <div class="rule"><span class="rule-n">✓</span><span><strong>POC displacement at 15:00 is common</strong> — 83.2% of sessions have price &gt; 1.0 ATR from session POC as the closing hour begins.</span></div>
+      <div class="rule"><span class="rule-n">✓</span><span><strong>Theoretical expectancy is positive</strong> — the closing magnet exists in aggregate (36.4% reversion rate, R/R 8–15× by construction), and all three POC variants produce positive theoretical expectancy.</span></div>
+      <div class="rule"><span class="rule-n">✓</span><span><strong>Exp 5 (POC-B + VWAP cross) shows real signal</strong> — SR+1.205 on 67 test trades. The VWAP crossing the POC level is a meaningful event that selects for genuine reversion setups.</span></div>
+      <div class="rule"><span class="rule-n">✓</span><span><strong>The closing-hour POC pull is real</strong> but requires confirmation — it is not exploitable with a pure displacement entry across all regime types.</span></div>
+    </div>
+  </div>
+
+  <h3 class="sh">Not confirmed by walk-forward</h3>
+  <div class="rulebox">
+    <div class="rulebox-head">Results that did not survive OOS validation</div>
+    <div class="rulebox-body">
+      <div class="rule"><span class="rule-n">✗</span><span><strong>Simple displacement has no persistent edge</strong> across time windows. Pooled OOS PF=1.005, p=0.4812 — statistically indistinguishable from zero edge.</span></div>
+      <div class="rule"><span class="rule-n">✗</span><span><strong>Walk-forward failed all three gates</strong> — p=0.48, bootstrap p5=0.84, only 2/5 windows PF&gt;1.0.</span></div>
+      <div class="rule"><span class="rule-n">✗</span><span><strong>V1 catastrophe rules out the strategy</strong> — SR=−3.010 and −27.4% return in 2023-H1 shows the strategy fails badly in trending regimes. This is not variance; it is a structural failure mode.</span></div>
+    </div>
+  </div>
+
+  <h3 class="sh">Key insight: Exp 5 is the most promising signal</h3>
+  <div class="callout info">
+    <strong>VWAP cross toward POC (Exp 5):</strong> PF=1.282, SR=+1.205 on 67 test
+    trades. This combination fires only 16.7% of sessions — which is the source of
+    its edge. By requiring VWAP to cross the POC level between 14:45 and 15:00, the
+    entry condition filters for sessions where institutional order flow is already
+    converging on the POC before the entry. This is confirmation, not prediction.
+    The combination deserves revisiting with more data — N=67 is below the 80-trade
+    WFO threshold by 13 trades.
+  </div>
+
+  <h3 class="sh">Next steps if hypothesis continues</h3>
+  <div class="rulebox">
+    <div class="rulebox-head">Potential extensions (not tested in Phase 20)</div>
+    <div class="rulebox-body">
+      <div class="rule"><span class="rule-n">1</span><span><strong>HMM regime filter:</strong> Apply the Phase 22 HMM transition signal. Ranging state (87.3% of sessions) shows exceptional closing geometry (MFE/MAE 4.14×). Combine with VWAP cross for Exp 5-equivalent but with regime conditioning. Phase 23 candidate.</span></div>
+      <div class="rule"><span class="rule-n">2</span><span><strong>Trending regime exclusion:</strong> V1's failure occurred in a trending regime. Adding a simple filter (e.g., 5-day trend &lt; 1.5 ATR) would have excluded the catastrophic window. This is the most direct fix to the walk-forward failure.</span></div>
+      <div class="rule"><span class="rule-n">3</span><span><strong>More test data for Exp 5:</strong> With 3 additional years of data, Exp 5 would cross the N=80 WFO threshold. The SR=+1.205 result is strong enough to warrant formal WFO if sample size permits.</span></div>
+    </div>
+  </div>
+
+  <div class="mstrip">
+    <div class="mstrip-inner">
+      <div class="mitem">
+        <div class="mitem-val warn">1.282</div>
+        <div class="mitem-key">Best PF test (Exp 5)</div>
+      </div>
+      <div class="mitem">
+        <div class="mitem-val pos">+1.205</div>
+        <div class="mitem-key">Best SR test (Exp 5)</div>
+      </div>
+      <div class="mitem">
+        <div class="mitem-val neg">2/5</div>
+        <div class="mitem-key">WFO windows passed</div>
+      </div>
+      <div class="mitem">
+        <div class="mitem-val neg">0.48</div>
+        <div class="mitem-key">WFO p-value (fail)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="verdict fail">
+    <div class="verdict-lbl">Final verdict · Phase 20</div>
+    <p>The closing-hour POC magnet is a real structural effect but not a tradeable edge
+    with displacement-only entries. Walk-forward failed all gates: p=0.4812, bootstrap
+    p5=0.8392, 2/5 windows. Exp 5 (POC-B + VWAP cross, SR+1.205) is the most promising
+    signal but N=67 is below the WFO threshold. The path forward requires either a
+    regime filter to exclude trending windows, or combination with the Phase 22 HMM
+    transition signal.</p>
+  </div>
+</div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div>
+    <strong>NQ Quantitative Research</strong> — Systematic research on NQ E-mini Futures (2021–2026).
+  </div>
+  <div>
+    <a href="index.html" style="color:var(--blue);text-decoration:none;">← Research Hub</a>
+    &nbsp;·&nbsp;
+    <a href="orb_research.html" style="color:var(--blue);text-decoration:none;">ORB (Ph. 1–7)</a>
+    &nbsp;·&nbsp;
+    <a href="vwap_research.html" style="color:var(--blue);text-decoration:none;">VWAP (Ph. 8–10)</a>
+    &nbsp;·&nbsp;
+    <a href="poc_research.html" style="color:var(--blue);text-decoration:none;">POC (Ph. 11–16)</a>
+    &nbsp;·&nbsp;
+    <a href="failed_spike_research.html" style="color:var(--blue);text-decoration:none;">Failed Spike (Ph. 17)</a>
+    &nbsp;·&nbsp;
+    <a href="spike_extreme_research.html" style="color:var(--blue);text-decoration:none;">Spike Extreme (Ph. 18)</a>
+    &nbsp;·&nbsp;
+    <a href="intraday_momentum_research.html" style="color:var(--blue);text-decoration:none;">Intraday Momentum (Ph. 19)</a>
+    &nbsp;·&nbsp;
+    <a href="intraday_reversal_research.html" style="color:var(--blue);text-decoration:none;">Intraday Reversal (Ph. 19B–19C)</a>
+    &nbsp;·&nbsp;
+    <a href="intraday_seasonality_research.html" style="color:var(--blue);text-decoration:none;">Seasonality (Ph. 21)</a>
+    &nbsp;·&nbsp;
+    <a href="hmm_transition_research.html" style="color:var(--blue);text-decoration:none;">HMM Transition (Ph. 22)</a>
+  </div>
+</footer>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>

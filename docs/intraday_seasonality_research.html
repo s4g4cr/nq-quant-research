@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NQ Intraday Seasonality Research — Quantitative Trading Research</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: #fafafa;
+  color: #111;
+  line-height: 1.6;
+}
+img { display: block; max-width: 100%; }
+
+:root {
+  --blue:    #0066FF;
+  --blue-10: #e6f0ff;
+  --amber:   #b45309;
+  --amber-10:#fef9c3;
+  --ink:     #111111;
+  --ink-2:   #444444;
+  --ink-3:   #888888;
+  --ink-4:   #bbbbbb;
+  --line:    #e5e5e5;
+  --bg:      #fafafa;
+  --surface: #ffffff;
+  --green:   #16a34a;
+  --red:     #dc2626;
+  --mono:    'Menlo', 'Consolas', monospace;
+  --r2: 4px;
+  --r3: 6px;
+}
+
+.hdr {
+  position: sticky; top: 0; z-index: 200;
+  background: rgba(250,250,250,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+  height: 52px;
+  display: flex; align-items: center;
+  padding: 0 32px; gap: 40px;
+}
+.hdr-logo {
+  font-size: 13px; font-weight: 600; color: var(--ink);
+  letter-spacing: -0.01em; white-space: nowrap;
+  display: flex; align-items: center; gap: 8px;
+  text-decoration: none;
+}
+.hdr-logo-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--amber); }
+.hdr-series {
+  font-size: 12px; color: var(--ink-3);
+  border-left: 1px solid var(--line);
+  padding-left: 16px; white-space: nowrap;
+}
+.hdr-series a { color: var(--blue); text-decoration: none; font-weight: 500; }
+.hdr-series a:hover { text-decoration: underline; }
+.hdr-tabs {
+  display: flex; gap: 2px; overflow-x: auto;
+  scrollbar-width: none; flex: 1;
+}
+.hdr-tabs::-webkit-scrollbar { display: none; }
+.tab {
+  flex-shrink: 0;
+  background: none; border: none; cursor: pointer;
+  padding: 6px 12px; border-radius: var(--r2);
+  font-size: 13px; font-weight: 400; color: var(--ink-3);
+  transition: color 120ms, background 120ms;
+  white-space: nowrap; display: flex; align-items: center; gap: 6px;
+}
+.tab:hover { color: var(--ink); background: #f0f0f0; }
+.tab.active { color: var(--ink); font-weight: 500; background: #ebebeb; }
+.tab-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.dot-fail    { background: var(--red); }
+.dot-warn    { background: var(--amber); }
+.dot-neutral { background: var(--ink-4); }
+.dot-info    { background: var(--blue); }
+
+.hero {
+  padding: 64px 32px 48px;
+  max-width: 1120px; margin: 0 auto;
+  border-bottom: 1px solid var(--line);
+}
+.hero-series {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-3);
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-series::before {
+  content: ''; display: inline-block;
+  width: 20px; height: 1px; background: var(--ink-4);
+}
+.hero-label {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--amber); margin-bottom: 16px;
+}
+.hero-title {
+  font-size: clamp(28px, 4vw, 48px);
+  font-weight: 500; letter-spacing: -0.03em; line-height: 1.1;
+  color: var(--ink); max-width: 680px; margin-bottom: 16px;
+}
+.hero-sub {
+  font-size: 16px; color: var(--ink-2); max-width: 560px;
+  line-height: 1.65; margin-bottom: 40px; font-weight: 300;
+}
+.hero-expectancy {
+  background: white; border: 1px solid var(--line);
+  border-radius: var(--r3); overflow: hidden;
+  max-width: 720px; margin-bottom: 40px;
+}
+.he-header {
+  padding: 12px 16px; background: #fafafa;
+  border-bottom: 1px solid var(--line);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.he-title { font-size: 12px; font-weight: 600; color: var(--ink-2); letter-spacing: 0.02em; }
+.he-sub { font-size: 11px; color: var(--ink-3); }
+.he-row {
+  display: grid;
+  grid-template-columns: 180px 80px 80px 1fr 80px;
+  padding: 9px 16px; border-bottom: 1px solid #f5f5f5;
+  align-items: center; gap: 8px;
+}
+.he-row:last-child { border-bottom: none; }
+.he-row.header-row { background: #f7f7f7; border-bottom: 1px solid var(--line); }
+.he-cell { font-family: var(--mono); font-size: 12px; color: var(--ink-2); }
+.he-cell.label { font-size: 11px; color: var(--ink-3); font-family: inherit; letter-spacing: 0.05em; text-transform: uppercase; }
+.he-cell.neg { color: var(--red); }
+.he-cell.pos { color: var(--green); }
+.he-cell.bold { font-weight: 600; color: var(--ink); }
+.he-bar { height: 4px; background: #f0f0f0; border-radius: 2px; overflow: hidden; }
+.he-bar-fill { height: 100%; border-radius: 2px; background: var(--red); }
+.he-bar-fill.pos { background: var(--green); }
+.hero-finding {
+  background: var(--amber-10); border: 1px solid #fde68a;
+  border-left: 3px solid var(--amber); border-radius: var(--r3);
+  padding: 14px 18px; font-size: 14px; color: #78350f;
+  line-height: 1.6; max-width: 720px;
+}
+.hero-finding strong { font-weight: 600; }
+
+.panel { display: none; }
+.panel.active { display: block; }
+
+.content {
+  max-width: 1120px; margin: 0 auto;
+  padding: 48px 32px 96px;
+}
+.layout-2col {
+  display: grid; grid-template-columns: 1fr 320px; gap: 64px;
+  align-items: start;
+}
+.layout-full { max-width: 720px; }
+
+.eyebrow {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase; margin-bottom: 12px;
+}
+.eyebrow.fail    { color: var(--red); }
+.eyebrow.warn    { color: var(--amber); }
+.eyebrow.neutral { color: var(--ink-3); }
+.eyebrow.info    { color: var(--blue); }
+
+h2.title {
+  font-size: 26px; font-weight: 600; letter-spacing: -0.02em;
+  line-height: 1.2; color: var(--ink); margin-bottom: 16px;
+}
+h3.sh {
+  font-size: 14px; font-weight: 600; color: var(--ink);
+  margin: 40px 0 12px; padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+p.lead {
+  font-size: 16px; color: var(--ink-2); line-height: 1.7;
+  margin-bottom: 16px; font-weight: 300;
+}
+p.body {
+  font-size: 14px; color: var(--ink-2); line-height: 1.75;
+  margin-bottom: 14px;
+}
+
+.sidebar {
+  position: sticky; top: 68px;
+  border: 1px solid var(--line); border-radius: var(--r3);
+  overflow: hidden; background: var(--surface);
+}
+.sb-head {
+  padding: 12px 16px; border-bottom: 1px solid var(--line);
+  background: #f7f7f7;
+}
+.sb-head-label {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--ink-3);
+}
+.sb-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 9px 16px; border-bottom: 1px solid #f0f0f0; gap: 16px;
+}
+.sb-row:last-child { border-bottom: none; }
+.sb-key { font-size: 12px; color: var(--ink-3); white-space: nowrap; }
+.sb-val { font-family: var(--mono); font-size: 12px; color: var(--ink); font-weight: 500; white-space: nowrap; }
+.sb-val.pos  { color: var(--green); }
+.sb-val.neg  { color: var(--red); }
+.sb-val.warn { color: var(--amber); }
+.sb-val.info { color: var(--blue); }
+
+.tbl-outer {
+  border: 1px solid var(--line); border-radius: var(--r3);
+  overflow: hidden; margin: 24px 0;
+}
+.tbl-outer table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tbl-outer thead { background: #f7f7f7; }
+.tbl-outer th {
+  padding: 9px 14px; text-align: left;
+  font-family: var(--mono); font-size: 10px; font-weight: 500;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3);
+  border-bottom: 1px solid var(--line); white-space: nowrap;
+}
+.tbl-outer td {
+  padding: 9px 14px; border-bottom: 1px solid #f0f0f0;
+  color: var(--ink-2); vertical-align: top;
+}
+.tbl-outer tr:last-child td { border-bottom: none; }
+.tbl-outer tr:hover td { background: #fafafa; }
+td.pos  { color: var(--green); font-weight: 500; }
+td.neg  { color: var(--red); font-weight: 500; }
+td.warn { color: var(--amber); font-weight: 500; }
+td.bold { color: var(--ink); font-weight: 600; }
+td.mono { font-family: var(--mono); font-size: 12px; }
+
+.rulebox {
+  border: 1px solid var(--line); border-radius: var(--r3);
+  overflow: hidden; margin: 20px 0;
+}
+.rulebox-head {
+  padding: 10px 16px; background: #f7f7f7;
+  border-bottom: 1px solid var(--line);
+  font-size: 11px; font-weight: 600; color: var(--ink-2);
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+.rulebox-body { padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.rule {
+  display: flex; gap: 10px; align-items: flex-start;
+  font-size: 13px; color: var(--ink-2); line-height: 1.5;
+}
+.rule-n {
+  font-family: var(--mono); font-size: 11px; color: var(--blue);
+  flex-shrink: 0; width: 18px; padding-top: 1px;
+}
+
+.callout {
+  border-radius: var(--r3); padding: 16px 20px;
+  margin: 20px 0; font-size: 14px; line-height: 1.65;
+  border-left: 3px solid;
+}
+.callout.info    { background: var(--blue-10); border-color: var(--blue); color: #003d99; }
+.callout.warn    { background: var(--amber-10); border-color: var(--amber); color: #78350f; }
+.callout.danger  { background: #fff1f2; border-color: var(--red); color: #991b1b; }
+.callout.success { background: #f0fdf4; border-color: var(--green); color: #14532d; }
+.callout strong  { font-weight: 600; }
+
+.verdict {
+  border-radius: var(--r3); padding: 16px 20px;
+  margin: 24px 0; border: 1px solid;
+}
+.verdict.pass   { border-color: #bbf7d0; background: #f0fdf4; }
+.verdict.fail   { border-color: #fecaca; background: #fff1f2; }
+.verdict.warn   { border-color: #fde68a; background: #fffbeb; }
+.verdict.pivot  { border-color: #bfdbfe; background: #eff6ff; }
+.verdict-lbl {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
+  text-transform: uppercase; margin-bottom: 6px;
+}
+.verdict.pass  .verdict-lbl { color: var(--green); }
+.verdict.fail  .verdict-lbl { color: var(--red); }
+.verdict.warn  .verdict-lbl { color: var(--amber); }
+.verdict.pivot .verdict-lbl { color: var(--blue); }
+.verdict p { font-size: 14px; color: var(--ink-2); margin: 0; line-height: 1.6; }
+
+.mstrip {
+  display: grid; gap: 1px; background: var(--line);
+  border: 1px solid var(--line); border-radius: var(--r3);
+  overflow: hidden; margin: 24px 0;
+}
+.mstrip-inner {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1px; background: var(--line);
+}
+.mitem { background: var(--surface); padding: 16px 20px; }
+.mitem-val {
+  font-size: 24px; font-weight: 600; letter-spacing: -0.02em;
+  line-height: 1; margin-bottom: 4px;
+}
+.mitem-val.pos  { color: var(--green); }
+.mitem-val.neg  { color: var(--red); }
+.mitem-val.warn { color: var(--amber); }
+.mitem-val.info { color: var(--blue); }
+.mitem-key { font-size: 11px; color: var(--ink-3); font-weight: 400; }
+
+.divider { border: none; border-top: 1px solid var(--line); margin: 40px 0; }
+
+.footer {
+  border-top: 1px solid var(--line);
+  padding: 32px;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 16px;
+  font-size: 12px; color: var(--ink-3);
+}
+.footer strong { color: var(--ink-2); font-weight: 500; }
+
+@media (max-width: 860px) {
+  .hdr { padding: 0 16px; gap: 12px; }
+  .hdr-series { display: none; }
+  .hero { padding: 40px 16px 32px; }
+  .content { padding: 32px 16px 64px; }
+  .layout-2col { grid-template-columns: 1fr; }
+  .sidebar { position: static; }
+  .he-row { grid-template-columns: 120px 64px 64px 1fr 64px; }
+  .footer { padding: 24px 16px; flex-direction: column; align-items: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <a class="hdr-logo" href="#">
+    <div class="hdr-logo-dot"></div>
+    NQ Intraday Seasonality Research
+  </a>
+  <div class="hdr-series">
+    Part of <a href="https://s4g4cr.github.io/nq-quant-research/">NQ Quantitative Research Series</a>
+  </div>
+  <nav class="hdr-tabs" role="tablist">
+    <button class="tab active" onclick="show('hypothesis',this)">
+      <span class="tab-dot dot-neutral"></span>The Hypothesis
+    </button>
+    <button class="tab" onclick="show('diagnostic',this)">
+      <span class="tab-dot dot-info"></span>Diagnostic
+    </button>
+    <button class="tab" onclick="show('wfo',this)">
+      <span class="tab-dot dot-fail"></span>Walk-Forward Results
+    </button>
+    <button class="tab" onclick="show('conclusions',this)">
+      <span class="tab-dot dot-warn"></span>Conclusions
+    </button>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-series">NQ Quantitative Research · Phase 21</div>
+  <div class="hero-label">Hypothesis falsified · WFO 0/5 windows · Effect present but unstable</div>
+  <h1 class="hero-title">Does NQ repeat its half-hour returns?</h1>
+  <p class="hero-sub">
+    Academic replication of Heston, Korajczyk &amp; Sadka (2010): the return of an asset
+    in a given 30-minute interval predicts its return in that same interval 40 days
+    later. Tested across all 13 RTH intervals in NQ futures — effect detected in 8/13
+    intervals, but walk-forward produced 0/5 positive windows.
+  </p>
+
+  <div class="hero-expectancy">
+    <div class="he-header">
+      <span class="he-title">Best interval performance by lookback N — Part A interval scan</span>
+      <span class="he-sub">In-sample test period Jan 2025–Jun 2026 · all intervals vs N lookbacks</span>
+    </div>
+    <div class="he-row header-row">
+      <span class="he-cell label">Interval</span>
+      <span class="he-cell label">Best N</span>
+      <span class="he-cell label">PF test</span>
+      <span class="he-cell label">Signal strength</span>
+      <span class="he-cell label">SR test</span>
+    </div>
+    <div class="he-row">
+      <span class="he-cell">I3 · 10:30–11:00</span>
+      <span class="he-cell">N=5</span>
+      <span class="he-cell">1.189</span>
+      <span class="he-cell">
+        <div class="he-bar"><div class="he-bar-fill pos" style="width:25%"></div></div>
+      </span>
+      <span class="he-cell pos">+0.782</span>
+    </div>
+    <div class="he-row">
+      <span class="he-cell bold">I10 · 14:00–14:30</span>
+      <span class="he-cell bold">N=10</span>
+      <span class="he-cell bold">1.361</span>
+      <span class="he-cell">
+        <div class="he-bar"><div class="he-bar-fill pos" style="width:64%"></div></div>
+      </span>
+      <span class="he-cell pos bold">+1.788</span>
+    </div>
+    <div class="he-row">
+      <span class="he-cell">I5 · 11:30–12:00</span>
+      <span class="he-cell">N=10</span>
+      <span class="he-cell">1.142</span>
+      <span class="he-cell">
+        <div class="he-bar"><div class="he-bar-fill pos" style="width:18%"></div></div>
+      </span>
+      <span class="he-cell pos">+0.531</span>
+    </div>
+    <div class="he-row">
+      <span class="he-cell">I7 · 12:30–13:00</span>
+      <span class="he-cell">N=3</span>
+      <span class="he-cell">1.094</span>
+      <span class="he-cell">
+        <div class="he-bar"><div class="he-bar-fill pos" style="width:12%"></div></div>
+      </span>
+      <span class="he-cell pos">+0.344</span>
+    </div>
+  </div>
+
+  <div class="hero-finding">
+    <strong>Key finding:</strong> I10 (14:00–14:30) with N=10 lookback shows SR=+1.788
+    and PF=1.361 in the test period — a compelling in-sample result. Walk-forward
+    across 5 anchored windows produced 0/5 positive periods. Each window selected a
+    different best interval (I1, I8, I10, I10, I5). The in-sample result is pure
+    selection bias from 65 interval-lookback combinations. The Heston effect,
+    documented in individual US equities, does not generalize to NQ futures.
+  </div>
+</section>
+
+<!-- ═══ HYPOTHESIS ═══ -->
+<div class="panel active" id="panel-hypothesis">
+<div class="content">
+  <div class="layout-2col">
+    <div>
+      <div class="eyebrow neutral">Academic replication · Phase 21</div>
+      <h2 class="title">The Heston et al. (2010) intraday seasonality hypothesis</h2>
+      <p class="lead">
+        Heston, Korajczyk &amp; Sadka (2010) — published in the <em>Journal of Finance</em>
+        — documented that the return of a stock in a specific 30-minute interval predicts
+        its return in the same interval on the following 40 trading days. The effect is
+        driven by predictable institutional order flows that repeat at fixed intraday times.
+      </p>
+      <p class="body">
+        The mechanism: large institutions that execute recurring programs (pension fund
+        rebalancing, index replication, algorithmic strategies with fixed execution windows)
+        create predictable price pressure at the same times each day. If the 14:00–14:30
+        window is dominated by pension fund selling on Tuesdays, that selling pattern
+        repeats — and the sign of the 14:00–14:30 return over the last N days carries
+        information about what the next N days will look like.
+      </p>
+      <p class="body">
+        Phase 21 tests whether the same seasonality exists in NQ E-mini futures. NQ is
+        a very different instrument from individual equities: it is a macro aggregate
+        with diverse participant types (HFT, systematic CTAs, options hedgers, retail).
+        The hypothesis is that if any large participant segment exhibits timing-predictable
+        behavior, it should appear in the autocorrelation structure of the 30-minute returns.
+      </p>
+
+      <h3 class="sh">Methodology</h3>
+      <div class="rulebox">
+        <div class="rulebox-head">Experimental design</div>
+        <div class="rulebox-body">
+          <div class="rule"><span class="rule-n">1</span><span><strong>13 intervals tested:</strong> I1 (09:30–10:00) through I13 (15:30–16:00). Each interval = exactly one 30-minute RTH period.</span></div>
+          <div class="rule"><span class="rule-n">2</span><span><strong>Signal:</strong> sign(mean return of interval over last N days). Positive mean → predict positive return; negative mean → predict negative return.</span></div>
+          <div class="rule"><span class="rule-n">3</span><span><strong>Entry:</strong> at the open of the interval in the predicted direction. One contract. No SL/TP — hard exit at interval close.</span></div>
+          <div class="rule"><span class="rule-n">4</span><span><strong>N lookback values:</strong> [1, 3, 5, 10, 20] days — 5 configurations per interval = 65 combinations total.</span></div>
+          <div class="rule"><span class="rule-n">5</span><span><strong>Best interval selection:</strong> per walk-forward window, select the interval+N combo with highest SR on the training data. Apply that selection to the OOS window.</span></div>
+          <div class="rule"><span class="rule-n">6</span><span><strong>No slippage/commission in Part A</strong> — theoretical test first. Costs applied in WFO validation.</span></div>
+        </div>
+      </div>
+
+      <div class="callout info">
+        <strong>Heston et al. (2010) — Journal of Finance:</strong> "Intraday Patterns in the
+        Cross-section of Stock Returns." Documents that the auto-covariance of 30-minute
+        returns is positive at 40-day lag for individual US equities. One of the most
+        cited papers in microstructure and one of the cleanest demonstrations of
+        predictable institutional patterns in equity markets.
+      </div>
+    </div>
+
+    <div>
+      <div class="sidebar">
+        <div class="sb-head"><div class="sb-head-label">Research scope</div></div>
+        <div class="sb-row"><span class="sb-key">Phase</span><span class="sb-val">21</span></div>
+        <div class="sb-row"><span class="sb-key">Academic basis</span><span class="sb-val">Heston et al. 2010</span></div>
+        <div class="sb-row"><span class="sb-key">Asset</span><span class="sb-val">NQ E-mini Futures</span></div>
+        <div class="sb-row"><span class="sb-key">Intervals tested</span><span class="sb-val">13 (I1–I13)</span></div>
+        <div class="sb-row"><span class="sb-key">Lookbacks tested</span><span class="sb-val">5 (N=1,3,5,10,20)</span></div>
+        <div class="sb-row"><span class="sb-key">Total combinations</span><span class="sb-val">65</span></div>
+        <div class="sb-row"><span class="sb-key">Dataset</span><span class="sb-val">2021-06-25 to 2026-06-17</span></div>
+        <div class="sb-head" style="border-top:1px solid var(--line)"><div class="sb-head-label">Autocorrelation</div></div>
+        <div class="sb-row"><span class="sb-key">Significant intervals</span><span class="sb-val warn">8 / 13</span></div>
+        <div class="sb-row"><span class="sb-key">Effect in NQ</span><span class="sb-val warn">Present but shifts</span></div>
+        <div class="sb-row"><span class="sb-key">Stable winner</span><span class="sb-val neg">None</span></div>
+        <div class="sb-head" style="border-top:1px solid var(--line)"><div class="sb-head-label">Best in-sample (I10+N10)</div></div>
+        <div class="sb-row"><span class="sb-key">SR test</span><span class="sb-val pos">+1.788</span></div>
+        <div class="sb-row"><span class="sb-key">PF test</span><span class="sb-val warn">1.361</span></div>
+        <div class="sb-row"><span class="sb-key">N trades</span><span class="sb-val">247</span></div>
+        <div class="sb-head" style="border-top:1px solid var(--line)"><div class="sb-head-label">Walk-forward</div></div>
+        <div class="sb-row"><span class="sb-key">Windows SR &gt; 0</span><span class="sb-val neg">0 / 5</span></div>
+        <div class="sb-row"><span class="sb-key">Pooled PF OOS</span><span class="sb-val neg">0.863</span></div>
+        <div class="sb-row"><span class="sb-key">p-value</span><span class="sb-val neg">0.9199</span></div>
+        <div class="sb-row"><span class="sb-key">Verdict</span><span class="sb-val neg">Falsified</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ DIAGNOSTIC ═══ -->
+<div class="panel" id="panel-diagnostic">
+<div class="content layout-full">
+  <div class="eyebrow info">Phase 21 · Diagnostic</div>
+  <h2 class="title">The effect exists in NQ — but it shifts across time</h2>
+  <p class="lead">
+    Autocorrelation analysis of the 13 RTH intervals shows that 8 of 13 have
+    statistically significant autocorrelation at lags consistent with the Heston et al.
+    hypothesis. The effect is real in NQ — but the intervals that are significant
+    change across sub-periods, and no single interval is consistently the strongest.
+  </p>
+
+  <h3 class="sh">Autocorrelation scan — significance by interval</h3>
+  <div class="tbl-outer">
+    <table>
+      <thead>
+        <tr><th>Interval</th><th>Time</th><th>Autocorr (N=10)</th><th>p-value</th><th>Significant</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>I1</td><td class="mono">09:30–10:00</td><td class="warn mono">+0.089</td><td class="mono">0.0321</td><td class="warn">Yes</td></tr>
+        <tr><td>I2</td><td class="mono">10:00–10:30</td><td class="mono">+0.041</td><td class="mono">0.3120</td><td class="neg">No</td></tr>
+        <tr><td>I3</td><td class="mono">10:30–11:00</td><td class="warn mono">+0.076</td><td class="mono">0.0621</td><td class="warn">Marginal</td></tr>
+        <tr><td>I4</td><td class="mono">11:00–11:30</td><td class="mono">+0.033</td><td class="mono">0.4180</td><td class="neg">No</td></tr>
+        <tr><td>I5</td><td class="mono">11:30–12:00</td><td class="warn mono">+0.082</td><td class="mono">0.0448</td><td class="warn">Yes</td></tr>
+        <tr><td>I6</td><td class="mono">12:00–12:30</td><td class="mono">−0.021</td><td class="mono">0.5921</td><td class="neg">No</td></tr>
+        <tr><td>I7</td><td class="mono">12:30–13:00</td><td class="warn mono">+0.094</td><td class="mono">0.0211</td><td class="warn">Yes</td></tr>
+        <tr><td>I8</td><td class="mono">13:00–13:30</td><td class="warn mono">+0.101</td><td class="mono">0.0138</td><td class="warn">Yes</td></tr>
+        <tr><td>I9</td><td class="mono">13:30–14:00</td><td class="mono">+0.048</td><td class="mono">0.2403</td><td class="neg">No</td></tr>
+        <tr><td class="bold">I10</td><td class="mono bold">14:00–14:30</td><td class="pos mono bold">+0.142</td><td class="mono bold">0.0008</td><td class="pos bold">Yes (strong)</td></tr>
+        <tr><td>I11</td><td class="mono">14:30–15:00</td><td class="warn mono">+0.088</td><td class="mono">0.0344</td><td class="warn">Yes</td></tr>
+        <tr><td>I12</td><td class="mono">15:00–15:30</td><td class="mono">+0.055</td><td class="mono">0.1762</td><td class="neg">No</td></tr>
+        <tr><td>I13</td><td class="mono">15:30–16:00</td><td class="warn mono">+0.079</td><td class="mono">0.0512</td><td class="warn">Marginal</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="body">
+    I10 (14:00–14:30) stands out with autocorrelation +0.142 and p=0.0008 —
+    this is genuinely strong in the full dataset. The 14:00–14:30 window in NQ
+    corresponds to the typical peak of macro-driven order flow: US market activity
+    after the European close, pension fund participation ahead of the 15:00 risk
+    management window. The autocorrelation is plausible mechanically.
+  </p>
+
+  <h3 class="sh">Part A interval scan — best test-period performers</h3>
+  <p class="body">
+    For each of the 65 interval+lookback combinations, the strategy was run on the
+    test period (Jan 2025–Jun 2026) to identify the best in-sample performer.
+    This is deliberately in-sample — the point is to see whether any combination
+    shows enough signal to warrant WFO.
+  </p>
+  <div class="mstrip">
+    <div class="mstrip-inner">
+      <div class="mitem">
+        <div class="mitem-val pos">+1.788</div>
+        <div class="mitem-key">Best SR — I10 N=10</div>
+      </div>
+      <div class="mitem">
+        <div class="mitem-val warn">1.361</div>
+        <div class="mitem-key">Best PF — I10 N=10</div>
+      </div>
+      <div class="mitem">
+        <div class="mitem-val info">247</div>
+        <div class="mitem-key">Trades (I10, N=10)</div>
+      </div>
+      <div class="mitem">
+        <div class="mitem-val warn">8/13</div>
+        <div class="mitem-key">Intervals significant</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout warn">
+    <strong>Selection bias is the core problem:</strong> With 65 combinations and an
+    18-month test period, finding SR=+1.788 for one combination is expected by chance.
+    The 64 other combinations that underperformed are not shown in a simple scan.
+    Walk-forward validation — where interval selection is done on training data and
+    tested on unseen data — is the only valid test of whether the effect is real.
+  </div>
+</div>
+</div>
+
+<!-- ═══ WFO ═══ -->
+<div class="panel" id="panel-wfo">
+<div class="content">
+  <div class="layout-2col">
+    <div>
+      <div class="eyebrow fail">Walk-forward · Phase 21</div>
+      <h2 class="title">Interval selection is pure in-sample overfitting</h2>
+      <p class="lead">
+        Five anchored walk-forward windows, each selecting the best interval+lookback
+        combination on training data and applying it to an unseen 6-month OOS window.
+        Result: 0/5 windows positive. Each window picks a different best interval.
+        The I10+N10 in-sample result is selection bias.
+      </p>
+
+      <h3 class="sh">Walk-forward results — 5 anchored windows</h3>
+      <div class="tbl-outer">
+        <table>
+          <thead>
+            <tr><th>Window</th><th>OOS Period</th><th>Selected Interval</th><th>N</th><th>PF OOS</th><th>SR OOS</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>V1</td><td>2023-H1</td>
+              <td class="warn">I1 · 09:30–10:00</td>
+              <td class="mono">126</td>
+              <td class="neg mono">0.904</td>
+              <td class="neg mono">−0.565</td>
+            </tr>
+            <tr>
+              <td>V2</td><td>2023-H2</td>
+              <td class="warn">I8 · 13:00–13:30</td>
+              <td class="mono">129</td>
+              <td class="neg mono">0.942</td>
+              <td class="neg mono">−0.353</td>
+            </tr>
+            <tr>
+              <td>V3</td><td>2024-H1</td>
+              <td class="warn">I10 · 14:00–14:30</td>
+              <td class="mono">131</td>
+              <td class="neg mono">0.859</td>
+              <td class="neg mono">−0.811</td>
+            </tr>
+            <tr>
+              <td>V4</td><td>2024-H2</td>
+              <td class="warn">I10 · 14:00–14:30</td>
+              <td class="mono">127</td>
+              <td class="neg mono">0.609</td>
+              <td class="neg mono">−2.859</td>
+            </tr>
+            <tr>
+              <td>V5</td><td>2025–26</td>
+              <td class="warn">I5 · 11:30–12:00</td>
+              <td class="mono">247</td>
+              <td class="neg mono">0.880</td>
+              <td class="neg mono">−0.749</td>
+            </tr>
+            <tr>
+              <td class="bold">Pooled</td>
+              <td class="bold">All OOS</td>
+              <td>—</td>
+              <td class="mono bold">760</td>
+              <td class="neg mono bold">0.863</td>
+              <td class="neg bold">−1.143</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout danger">
+        <strong>Every window negative.</strong> V4 achieves SR=−2.859 after selecting
+        I10 as the best interval on training data — the same interval that produced
+        SR=+1.788 in the full test period. This is the textbook illustration of selection
+        bias: the interval that looks best over the full history is not the best interval
+        in each sub-period, and its OOS performance is worse than random.
+      </div>
+
+      <h3 class="sh">Interval instability — the core finding</h3>
+      <p class="body">
+        The five selected intervals across WFO windows are: I1, I8, I10, I10, I5.
+        Three different intervals selected across five windows. I10 was selected twice
+        but performed worst in its second OOS window (V4: SR=−2.859). The interval
+        that is "best" in any training window has no predictive power for the subsequent
+        OOS window.
+      </p>
+      <div class="tbl-outer">
+        <table>
+          <thead>
+            <tr><th>Statistical gate</th><th>Required</th><th>Achieved</th><th>Result</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>T-test p (1-sided, H0: PF=1)</td><td>&lt; 0.10</td><td class="neg mono">0.9199</td><td class="neg">Fail</td></tr>
+            <tr><td>Windows SR &gt; 0</td><td>≥ 3 / 5</td><td class="neg mono">0 / 5</td><td class="neg">Fail</td></tr>
+            <tr><td>Pooled PF &gt; 1.0</td><td>&gt; 1.0</td><td class="neg mono">0.863</td><td class="neg">Fail</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="body" style="font-size:12px; color:var(--ink-3);">
+        p=0.9199 means there is 92% probability the OOS result is as bad or worse
+        under the null hypothesis (zero edge). This is the opposite of evidence for
+        an edge — it is strong evidence against one.
+      </p>
+
+      <div class="verdict fail">
+        <div class="verdict-lbl">Walk-forward verdict · Phase 21</div>
+        <p>Hypothesis falsified. 0/5 OOS windows positive. Pooled PF=0.863, p=0.9199.
+        The in-sample SR=+1.788 (I10+N10) is entirely attributable to selection bias
+        across 65 combinations. No interval is persistently best — each training
+        window selects a different interval, and OOS performance is uniformly negative.
+        The Heston seasonality effect, documented in individual US equities, does not
+        generalize to NQ futures.</p>
+      </div>
+    </div>
+
+    <div>
+      <div class="sidebar">
+        <div class="sb-head"><div class="sb-head-label">Why intervals shift</div></div>
+        <div class="sb-row"><span class="sb-key">V1 best interval</span><span class="sb-val warn">I1 (09:30)</span></div>
+        <div class="sb-row"><span class="sb-key">V2 best interval</span><span class="sb-val warn">I8 (13:00)</span></div>
+        <div class="sb-row"><span class="sb-key">V3 best interval</span><span class="sb-val warn">I10 (14:00)</span></div>
+        <div class="sb-row"><span class="sb-key">V4 best interval</span><span class="sb-val warn">I10 (14:00)</span></div>
+        <div class="sb-row"><span class="sb-key">V5 best interval</span><span class="sb-val warn">I5 (11:30)</span></div>
+        <div class="sb-row"><span class="sb-key">Unique intervals</span><span class="sb-val neg">3 of 5 windows</span></div>
+        <div class="sb-head" style="border-top:1px solid var(--line)"><div class="sb-head-label">V4 worst case (I10)</div></div>
+        <div class="sb-row"><span class="sb-key">Train selection</span><span class="sb-val warn">I10 (best IS)</span></div>
+        <div class="sb-row"><span class="sb-key">OOS SR</span><span class="sb-val neg">−2.859</span></div>
+        <div class="sb-row"><span class="sb-key">IS vs OOS gap</span><span class="sb-val neg">4.65 SR pts</span></div>
+        <div class="sb-head" style="border-top:1px solid var(--line)"><div class="sb-head-label">Statistical verdict</div></div>
+        <div class="sb-row"><span class="sb-key">Pooled PF OOS</span><span class="sb-val neg">0.863</span></div>
+        <div class="sb-row"><span class="sb-key">p-value</span><span class="sb-val neg">0.9199</span></div>
+        <div class="sb-row"><span class="sb-key">Windows positive</span><span class="sb-val neg">0 / 5</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ CONCLUSIONS ═══ -->
+<div class="panel" id="panel-conclusions">
+<div class="content layout-full">
+  <div class="eyebrow fail">Phase 21 · Conclusions</div>
+  <h2 class="title">A real effect that cannot be exploited</h2>
+  <p class="lead">
+    Phase 21 answers a clean question: can the Heston et al. (2010) intraday seasonality
+    be systematically exploited in NQ futures? The answer is no. The effect is present
+    in the autocorrelation structure but too unstable across time periods to produce
+    consistent OOS edge.
+  </p>
+
+  <h3 class="sh">Confirmed by the data</h3>
+  <div class="rulebox">
+    <div class="rulebox-head">Findings that stand</div>
+    <div class="rulebox-body">
+      <div class="rule"><span class="rule-n">✓</span><span><strong>8/13 intervals show statistically significant autocorrelation</strong> at the 10-day lag in NQ. The half-hour seasonality effect exists in the data — not absent like in some instruments.</span></div>
+      <div class="rule"><span class="rule-n">✓</span><span><strong>I10 (14:00–14:30) shows the strongest autocorrelation</strong> in the full dataset (r=+0.142, p=0.0008). The 14:00–14:30 window is mechanically plausible as a macro-driven recurring order flow window.</span></div>
+      <div class="rule"><span class="rule-n">✓</span><span><strong>SR=+1.788 in-sample</strong> for I10+N10 on the test period. This is a large in-sample number that correctly triggered WFO.</span></div>
+    </div>
+  </div>
+
+  <h3 class="sh">Not confirmed — the hypothesis is falsified</h3>
+  <div class="rulebox">
+    <div class="rulebox-head">Results that failed OOS validation</div>
+    <div class="rulebox-body">
+      <div class="rule"><span class="rule-n">✗</span><span><strong>0/5 WFO windows positive</strong> (p=0.9199). The strongest possible rejection of the trading hypothesis.</span></div>
+      <div class="rule"><span class="rule-n">✗</span><span><strong>Interval selection is completely unstable</strong> — three different intervals selected as "best" across five windows. No interval is persistently best.</span></div>
+      <div class="rule"><span class="rule-n">✗</span><span><strong>The Heston effect documented in equities does not generalize to NQ futures.</strong> SR=+1.788 is selection bias from 65 combinations, not structural signal.</span></div>
+    </div>
+  </div>
+
+  <h3 class="sh">Why equities → NQ does not generalize</h3>
+  <div class="callout warn">
+    <strong>Likely explanation:</strong> The Heston et al. effect in individual equities
+    is driven by specific large participants (pension funds, index funds, sector ETFs)
+    with fixed execution windows for specific stocks. NQ as an index future aggregates
+    hundreds of stocks and attracts a far more diverse participant mix — HFT market
+    makers, macro CTAs, options dealers hedging gamma, retail day traders, and
+    institutional index managers all participate with different time horizons and
+    schedules. The averaging across participant types dilutes any single predictable
+    order flow pattern. An individual stock might have one dominant pension fund that
+    rebalances at 14:00 every Tuesday; NQ has no such concentration.
+  </div>
+
+  <div class="mstrip">
+    <div class="mstrip-inner">
+      <div class="mitem">
+        <div class="mitem-val pos">+1.788</div>
+        <div class="mitem-key">Best in-sample SR (I10, N=10)</div>
+      </div>
+      <div class="mitem">
+        <div class="mitem-val neg">0/5</div>
+        <div class="mitem-key">WFO windows positive</div>
+      </div>
+      <div class="mitem">
+        <div class="mitem-val neg">0.92</div>
+        <div class="mitem-key">WFO p-value (fail)</div>
+      </div>
+      <div class="mitem">
+        <div class="mitem-val warn">8/13</div>
+        <div class="mitem-key">Intervals w/ significant autocorr</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="verdict fail">
+    <div class="verdict-lbl">Final verdict · Phase 21</div>
+    <p>Hypothesis falsified. The intraday 30-minute seasonality effect documented by
+    Heston et al. (2010) in individual US equities does not generalize to NQ E-mini
+    futures. The autocorrelation effect is present but shifts across time — no interval
+    is persistently predictive. Walk-forward: 0/5 windows positive, p=0.9199. The
+    in-sample SR=+1.788 is selection bias from 65 combinations, not structural edge.
+    This is a clean falsification of a well-specified academic hypothesis.</p>
+  </div>
+</div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div>
+    <strong>NQ Quantitative Research</strong> — Systematic research on NQ E-mini Futures (2021–2026).
+  </div>
+  <div>
+    <a href="index.html" style="color:var(--blue);text-decoration:none;">← Research Hub</a>
+    &nbsp;·&nbsp;
+    <a href="orb_research.html" style="color:var(--blue);text-decoration:none;">ORB (Ph. 1–7)</a>
+    &nbsp;·&nbsp;
+    <a href="vwap_research.html" style="color:var(--blue);text-decoration:none;">VWAP (Ph. 8–10)</a>
+    &nbsp;·&nbsp;
+    <a href="poc_research.html" style="color:var(--blue);text-decoration:none;">POC (Ph. 11–16)</a>
+    &nbsp;·&nbsp;
+    <a href="failed_spike_research.html" style="color:var(--blue);text-decoration:none;">Failed Spike (Ph. 17)</a>
+    &nbsp;·&nbsp;
+    <a href="spike_extreme_research.html" style="color:var(--blue);text-decoration:none;">Spike Extreme (Ph. 18)</a>
+    &nbsp;·&nbsp;
+    <a href="intraday_momentum_research.html" style="color:var(--blue);text-decoration:none;">Intraday Momentum (Ph. 19)</a>
+    &nbsp;·&nbsp;
+    <a href="intraday_reversal_research.html" style="color:var(--blue);text-decoration:none;">Intraday Reversal (Ph. 19B–19C)</a>
+    &nbsp;·&nbsp;
+    <a href="poc_closing_magnet_research.html" style="color:var(--blue);text-decoration:none;">POC Closing Magnet (Ph. 20)</a>
+    &nbsp;·&nbsp;
+    <a href="hmm_transition_research.html" style="color:var(--blue);text-decoration:none;">HMM Transition (Ph. 22)</a>
+  </div>
+</footer>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>

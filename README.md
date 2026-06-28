@@ -1,7 +1,7 @@
 # NQ Quantitative Research
 
 Systematic quantitative research on NQ E-mini Futures.
-Six research cycles. Five hypotheses falsified or not confirmed. One confirmed
+Nine research cycles. Eight hypotheses falsified or not confirmed. One confirmed
 statistically. Built on a shared Python infrastructure:
 event-driven backtester, walk-forward validation,
 and bootstrap Monte Carlo sizing.
@@ -19,6 +19,9 @@ and bootstrap Monte Carlo sizing.
 | [Spike Extreme S/R](docs/spike_extreme_research.html) | Spike extreme as support/resistance · Phase 18 | No edge · geometry fixed (ATR SL) but OOS win rate collapsed 12pp |
 | [Intraday Momentum](docs/intraday_momentum_research.html) | Gao et al. (2018) replication · first 30-min return predicts last · Phase 19 | No edge · directional accuracy 48.6% · NQ shows reversal (p=0.026) not momentum |
 | [Intraday Reversal](docs/intraday_reversal_research.html) | Inverse Gao et al. · SHORT when r1>0 · 17-experiment filter optimization · Phases 19B–19C | Not confirmed · SR=1.423 OOS · WFO 3/5 windows · p=0.110 (misses by 0.010) |
+| [POC Closing Magnet](docs/poc_closing_magnet_research.html) | POC as closing-hour magnet · Phase 20 | Real signal but not confirmed · WFO failed 2/5 windows |
+| [Intraday Seasonality](docs/intraday_seasonality_research.html) | Half-hour return seasonality · Phase 21 · Heston et al. 2010 | Effect exists but interval unstable · WFO 0/5 windows |
+| [HMM Transition + Spike Fade](docs/hmm_transition_research.html) | Predictive HMM via transition matrix · Phases 22–22C | Signal confirmed p≈0.000 · Strategy too sparse · PF=2.529 on 15 trades |
 
 Interactive documentation with full phase-by-phase results, equity curves, and parameter tables.
 
@@ -35,6 +38,9 @@ All six are accessible from the research hub:
 | Spike Extreme (Phase 18) | [s4g4cr.github.io/nq-quant-research/spike_extreme_research.html](https://s4g4cr.github.io/nq-quant-research/spike_extreme_research.html) |
 | Intraday Momentum (Phase 19) | [s4g4cr.github.io/nq-quant-research/intraday_momentum_research.html](https://s4g4cr.github.io/nq-quant-research/intraday_momentum_research.html) |
 | Intraday Reversal (Phases 19B–19C) | [s4g4cr.github.io/nq-quant-research/intraday_reversal_research.html](https://s4g4cr.github.io/nq-quant-research/intraday_reversal_research.html) |
+| POC Closing Magnet (Phase 20) | [s4g4cr.github.io/nq-quant-research/poc_closing_magnet_research.html](https://s4g4cr.github.io/nq-quant-research/poc_closing_magnet_research.html) |
+| Intraday Seasonality (Phase 21) | [s4g4cr.github.io/nq-quant-research/intraday_seasonality_research.html](https://s4g4cr.github.io/nq-quant-research/intraday_seasonality_research.html) |
+| HMM Transition + Spike Fade (Phases 22–22C) | [s4g4cr.github.io/nq-quant-research/hmm_transition_research.html](https://s4g4cr.github.io/nq-quant-research/hmm_transition_research.html) |
 
 ---
 
@@ -104,7 +110,10 @@ nq-quant-research/
 │   ├── failed_spike_research.html        — Failed Spike research (Phase 17)
 │   ├── spike_extreme_research.html       — Spike Extreme S/R research (Phase 18)
 │   ├── intraday_momentum_research.html   — Intraday Momentum research (Phase 19)
-   └── intraday_reversal_research.html    — Intraday Reversal research (Phases 19B–19C)
+   ├── intraday_reversal_research.html    — Intraday Reversal research (Phases 19B–19C)
+│   ├── poc_closing_magnet_research.html   — POC Closing Magnet research (Phase 20)
+│   ├── intraday_seasonality_research.html — Intraday Seasonality research (Phase 21)
+│   └── hmm_transition_research.html       — HMM Transition + Spike Fade research (Phases 22–22C)
 └── run_phase*.py            — phase entry-points
 ```
 

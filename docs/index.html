@@ -193,13 +193,13 @@ body {
     <span class="hdr-dot"></span>
     NQ Futures Research
   </div>
-  <span class="hdr-sub">Six independent research cycles &nbsp;·&nbsp; 2021–2026</span>
+  <span class="hdr-sub">Nine independent research cycles &nbsp;·&nbsp; 2021–2026</span>
 </header>
 
 <section class="hero">
   <h1>NQ E-mini Futures<br>Quantitative Research</h1>
-  <p>Six independent research cycles testing structural edges on NQ 1-minute bars.
-     Five hypotheses falsified or not confirmed through rigorous walk-forward validation.
+  <p>Nine independent research cycles testing structural edges on NQ 1-minute bars.
+     Eight hypotheses falsified or not confirmed through rigorous walk-forward validation.
      One statistically confirmed with bootstrap significance testing.</p>
 </section>
 
@@ -297,6 +297,48 @@ body {
     </div>
     <span class="card-badge badge-falsified">
       <span class="badge-dot"></span> Not confirmed &nbsp;·&nbsp; signal real &nbsp;·&nbsp; regime-dependent
+    </span>
+    <div class="card-cta">View research →</div>
+  </a>
+
+  <a class="card" href="./poc_closing_magnet_research.html">
+    <div class="card-label">Phase 20</div>
+    <div class="card-title">POC as Closing-Hour Magnet</div>
+    <div class="card-desc">
+      Last-hour (15:00–16:00) POC gravitational pull hypothesis. Three POC variants,
+      three entry conditions, 9 experiments. VWAP-cross + prev_poc shows SR+1.205
+      on 67 trades. Simple displacement fails walk-forward (2/5 windows, p=0.48).
+    </div>
+    <span class="card-badge badge-falsified">
+      <span class="badge-dot"></span> Not confirmed &nbsp;·&nbsp; WFO failed 2/5 windows
+    </span>
+    <div class="card-cta">View research →</div>
+  </a>
+
+  <a class="card" href="./intraday_seasonality_research.html">
+    <div class="card-label">Phase 21</div>
+    <div class="card-title">Intraday Seasonality (Heston 2010)</div>
+    <div class="card-desc">
+      Academic replication of Heston, Korajczyk &amp; Sadka (2010). Half-hour return
+      continuation across 13 RTH intervals. I10 (14:00–14:30) shows SR+1.788 in-sample.
+      Walk-forward: 0/5 windows positive — interval selection is pure overfitting.
+    </div>
+    <span class="card-badge badge-falsified">
+      <span class="badge-dot"></span> Falsified &nbsp;·&nbsp; WFO 0/5 windows &nbsp;·&nbsp; p=0.92
+    </span>
+    <div class="card-cta">View research →</div>
+  </a>
+
+  <a class="card" href="./hmm_transition_research.html">
+    <div class="card-label">Phases 22–22C</div>
+    <div class="card-title">HMM Transition + Bearish Spike Fade</div>
+    <div class="card-desc">
+      Predictive HMM via transition matrix T[i][j] = P(state_j tomorrow | state_i today).
+      82.6% directional accuracy (p≈0.000). Bearish Spike Fade: PF=2.529, SR=+0.925
+      on 15 test trades. Too sparse for WFO (N≥60 requires ~46 months of test data).
+    </div>
+    <span class="card-badge badge-falsified">
+      <span class="badge-dot"></span> Signal confirmed &nbsp;·&nbsp; Strategy too sparse &nbsp;·&nbsp; WFO not possible
     </span>
     <div class="card-cta">View research →</div>
   </a>

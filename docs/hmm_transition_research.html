@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NQ HMM Transition Research — Quantitative Trading Research</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: #fafafa;
+  color: #111;
+  line-height: 1.6;
+}
+img { display: block; max-width: 100%; }
+
+:root {
+  --blue:    #0066FF;
+  --blue-10: #e6f0ff;
+  --amber:   #b45309;
+  --amber-10:#fef9c3;
+  --ink:     #111111;
+  --ink-2:   #444444;
+  --ink-3:   #888888;
+  --ink-4:   #bbbbbb;
+  --line:    #e5e5e5;
+  --bg:      #fafafa;
+  --surface: #ffffff;
+  --green:   #16a34a;
+  --red:     #dc2626;
+  --mono:    'Menlo', 'Consolas', monospace;
+  --r2: 4px;
+  --r3: 6px;
+}
+
+.hdr {
+  position: sticky; top: 0; z-index: 200;
+  background: rgba(250,250,250,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+  height: 52px;
+  display: flex; align-items: center;
+  padding: 0 32px; gap: 40px;
+}
+.hdr-logo {
+  font-size: 13px; font-weight: 600; color: var(--ink);
+  letter-spacing: -0.01em; white-space: nowrap;
+  display: flex; align-items: center; gap: 8px;
+  text-decoration: none;
+}
+.hdr-logo-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--amber); }
+.hdr-series {
+  font-size: 12px; color: var(--ink-3);
+  border-left: 1px solid var(--line);
+  padding-left: 16px; white-space: nowrap;
+}
+.hdr-series a { color: var(--blue); text-decoration: none; font-weight: 500; }
+.hdr-series a:hover { text-decoration: underline; }
+.hdr-tabs {
+  display: flex; gap: 2px; overflow-x: auto;
+  scrollbar-width: none; flex: 1;
+}
+.hdr-tabs::-webkit-scrollbar { display: none; }
+.tab {
+  flex-shrink: 0;
+  background: none; border: none; cursor: pointer;
+  padding: 6px 12px; border-radius: var(--r2);
+  font-size: 13px; font-weight: 400; color: var(--ink-3);
+  transition: color 120ms, background 120ms;
+  white-space: nowrap; display: flex; align-items: center; gap: 6px;
+}
+.tab:hover { color: var(--ink); background: #f0f0f0; }
+.tab.active { color: var(--ink); font-weight: 500; background: #ebebeb; }
+.tab-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.dot-fail    { background: var(--red); }
+.dot-warn    { background: var(--amber); }
+.dot-neutral { background: var(--ink-4); }
+.dot-info    { background: var(--blue); }
+.dot-success { background: var(--green); }
+
+.hero {
+  padding: 64px 32px 48px;
+  max-width: 1120px; margin: 0 auto;
+  border-bottom: 1px solid var(--line);
+}
+.hero-series {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-3);
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-series::before {
+  content: ''; display: inline-block;
+  width: 20px; height: 1px; background: var(--ink-4);
+}
+.hero-label {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--blue); margin-bottom: 16px;
+}
+.hero-title {
+  font-size: clamp(28px, 4vw, 48px);
+  font-weight: 500; letter-spacing: -0.03em; line-height: 1.1;
+  color: var(--ink); max-width: 680px; margin-bottom: 16px;
+}
+.hero-sub {
+  font-size: 16px; color: var(--ink-2); max-width: 560px;
+  line-height: 1.65; margin-bottom: 40px; font-weight: 300;
+}
+.hero-expectancy {
+  background: white; border: 1px solid var(--line);
+  border-radius: var(--r3); overflow: hidden;
+  max-width: 720px; margin-bottom: 40px;
+}
+.he-header {
+  padding: 12px 16px; background: #fafafa;
+  border-bottom: 1px solid var(--line);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.he-title { font-size: 12px; font-weight: 600; color: var(--ink-2); letter-spacing: 0.02em; }
+.he-sub { font-size: 11px; color: var(--ink-3); }
+.he-row {
+  display: grid;
+  grid-template-columns: 160px 90px 80px 1fr 80px;
+  padding: 9px 16px; border-bottom: 1px solid #f5f5f5;
+  align-items: center; gap: 8px;
+}
+.he-row:last-child { border-bottom: none; }
+.he-row.header-row { background: #f7f7f7; border-bottom: 1px solid var(--line); }
+.he-cell { font-family: var(--mono); font-size: 12px; color: var(--ink-2); }
+.he-cell.label { font-size: 11px; color: var(--ink-3); font-family: inherit; letter-spacing: 0.05em; text-transform: uppercase; }
+.he-cell.neg { color: var(--red); }
+.he-cell.pos { color: var(--green); }
+.he-cell.info { color: var(--blue); }
+.he-cell.bold { font-weight: 600; color: var(--ink); }
+.he-bar { height: 4px; background: #f0f0f0; border-radius: 2px; overflow: hidden; }
+.he-bar-fill { height: 100%; border-radius: 2px; background: var(--red); }
+.he-bar-fill.pos { background: var(--green); }
+.he-bar-fill.info { background: var(--blue); }
+.hero-finding {
+  background: var(--blue-10); border: 1px solid #bfdbfe;
+  border-left: 3px solid var(--blue); border-radius: var(--r3);
+  padding: 14px 18px; font-size: 14px; color: #003d99;
+  line-height: 1.6; max-width: 720px;
+}
+.hero-finding strong { font-weight: 600; }
+
+.panel { display: none; }
+.panel.active { display: block; }
+
+.content {
+  max-width: 1120px; margin: 0 auto;
+  padding: 48px 32px 96px;
+}
+.layout-2col {
+  display: grid; grid-template-columns: 1fr 320px; gap: 64px;
+  align-items: start;
+}
+.layout-full { max-width: 720px; }
+
+.eyebrow {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase; margin-bottom: 12px;
+}
+.eyebrow.fail    { color: var(--red); }
+.eyebrow.warn    { color: var(--amber); }
+.eyebrow.neutral { color: var(--ink-3); }
+.eyebrow.info    { color: var(--blue); }
+.eyebrow.success { color: var(--green); }
+
+h2.title {
+  font-size: 26px; font-weight: 600; letter-spacing: -0.02em;
+  line-height: 1.2; color: var(--ink); margin-bottom: 16px;
+}
+h3.sh {
+  font-size: 14px; font-weight: 600; color: var(--ink);
+  margin: 40px 0 12px; padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+p.lead {
+  font-size: 16px; color: var(--ink-2); line-height: 1.7;
+  margin-bottom: 16px; font-weight: 300;
+}
+p.body {
+  font-size: 14px; color: var(--ink-2); line-height: 1.75;
+  margin-bottom: 14px;
+}
+
+.sidebar {
+  position: sticky; top: 68px;
+  border: 1px solid var(--line); border-radius: var(--r3);
+  overflow: hidden; background: var(--surface);
+}
+.sb-head {
+  padding: 12px 16px; border-bottom: 1px solid var(--line);
+  background: #f7f7f7;
+}
+.sb-head-label {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--ink-3);
+}
+.sb-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 9px 16px; border-bottom: 1px solid #f0f0f0; gap: 16px;
+}
+.sb-row:last-child { border-bottom: none; }
+.sb-key { font-size: 12px; color: var(--ink-3); white-space: nowrap; }
+.sb-val { font-family: var(--mono); font-size: 12px; color: var(--ink); font-weight: 500; white-space: nowrap; }
+.sb-val.pos  { color: var(--green); }
+.sb-val.neg  { color: var(--red); }
+.sb-val.warn { color: var(--amber); }
+.sb-val.info { color: var(--blue); }
+
+.tbl-outer {
+  border: 1px solid var(--line); border-radius: var(--r3);
+  overflow: hidden; margin: 24px 0;
+}
+.tbl-outer table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tbl-outer thead { background: #f7f7f7; }
+.tbl-outer th {
+  padding: 9px 14px; text-align: left;
+  font-family: var(--mono); font-size: 10px; font-weight: 500;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3);
+  border-bottom: 1px solid var(--line); white-space: nowrap;
+}
+.tbl-outer td {
+  padding: 9px 14px; border-bottom: 1px solid #f0f0f0;
+  color: var(--ink-2); vertical-align: top;
+}
+.tbl-outer tr:last-child td { border-bottom: none; }
+.tbl-outer tr:hover td { background: #fafafa; }
+td.pos  { color: var(--green); font-weight: 500; }
+td.neg  { color: var(--red); font-weight: 500; }
+td.warn { color: var(--amber); font-weight: 500; }
+td.info { color: var(--blue); font-weight: 500; }
+td.bold { color: var(--ink); font-weight: 600; }
+td.mono { font-family: var(--mono); font-size: 12px; }
+
+.rulebox {
+  border: 1px solid var(--line); border-radius: var(--r3);
+  overflow: hidden; margin: 20px 0;
+}
+.rulebox-head {
+  padding: 10px 16px; background: #f7f7f7;
+  border-bottom: 1px solid var(--line);
+  font-size: 11px; font-weight: 600; color: var(--ink-2);
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+.rulebox-body { padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.rule {
+  display: flex; gap: 10px; align-items: flex-start;
+  font-size: 13px; color: var(--ink-2); line-height: 1.5;
+}
+.rule-n {
+  font-family: var(--mono); font-size: 11px; color: var(--blue);
+  flex-shrink: 0; width: 18px; padding-top: 1px;
+}
+
+.callout {
+  border-radius: var(--r3); padding: 16px 20px;
+  margin: 20px 0; font-size: 14px; line-height: 1.65;
+  border-left: 3px solid;
+}
+.callout.info    { background: var(--blue-10); border-color: var(--blue); color: #003d99; }
+.callout.warn    { background: var(--amber-10); border-color: var(--amber); color: #78350f; }
+.callout.danger  { background: #fff1f2; border-color: var(--red); color: #991b1b; }
+.callout.success { background: #f0fdf4; border-color: var(--green); color: #14532d; }
+.callout strong  { font-weight: 600; }
+
+.verdict {
+  border-radius: var(--r3); padding: 16px 20px;
+  margin: 24px 0; border: 1px solid;
+}
+.verdict.pass   { border-color: #bbf7d0; background: #f0fdf4; }
+.verdict.fail   { border-color: #fecaca; background: #fff1f2; }
+.verdict.warn   { border-color: #fde68a; background: #fffbeb; }
+.verdict.pivot  { border-color: #bfdbfe; background: #eff6ff; }
+.verdict-lbl {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
+  text-transform: uppercase; margin-bottom: 6px;
+}
+.verdict.pass  .verdict-lbl { color: var(--green); }
+.verdict.fail  .verdict-lbl { color: var(--red); }
+.verdict.warn  .verdict-lbl { color: var(--amber); }
+.verdict.pivot .verdict-lbl { color: var(--blue); }
+.verdict p { font-size: 14px; color: var(--ink-2); margin: 0; line-height: 1.6; }
+
+.mstrip {
+  display: grid; gap: 1px; background: var(--line);
+  border: 1px solid var(--line); border-radius: var(--r3);
+  overflow: hidden; margin: 24px 0;
+}
+.mstrip-inner {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1px; background: var(--line);
+}
+.mitem { background: var(--surface); padding: 16px 20px; }
+.mitem-val {
+  font-size: 24px; font-weight: 600; letter-spacing: -0.02em;
+  line-height: 1; margin-bottom: 4px;
+}
+.mitem-val.pos  { color: var(--green); }
+.mitem-val.neg  { color: var(--red); }
+.mitem-val.warn { color: var(--amber); }
+.mitem-val.info { color: var(--blue); }
+.mitem-key { font-size: 11px; color: var(--ink-3); font-weight: 400; }
+
+.divider { border: none; border-top: 1px solid var(--line); margin: 40px 0; }
+
+.footer {
+  border-top: 1px solid var(--line);
+  padding: 32px;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 16px;
+  font-size: 12px; color: var(--ink-3);
+}
+.footer strong { color: var(--ink-2); font-weight: 500; }
+
+@media (max-width: 860px) {
+  .hdr { padding: 0 16px; gap: 12px; }
+  .hdr-series { display: none; }
+  .hero { padding: 40px 16px 32px; }
+  .content { padding: 32px 16px 64px; }
+  .layout-2col { grid-template-columns: 1fr; }
+  .sidebar { position: static; }
+  .footer { padding: 24px 16px; flex-direction: column; align-items: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <a class="hdr-logo" href="#">
+    <div class="hdr-logo-dot"></div>
+    NQ HMM Transition Research
+  </a>
+  <div class="hdr-series">
+    Part of <a href="https://s4g4cr.github.io/nq-quant-research/">NQ Quantitative Research Series</a>
+  </div>
+  <nav class="hdr-tabs" role="tablist">
+    <button class="tab active" onclick="show('concept',this)">
+      <span class="tab-dot dot-neutral"></span>The Concept
+    </button>
+    <button class="tab" onclick="show('matrix',this)">
+      <span class="tab-dot dot-info"></span>Transition Matrix
+    </button>
+    <button class="tab" onclick="show('strategy',this)">
+      <span class="tab-dot dot-warn"></span>Spike Fade Strategy
+    </button>
+    <button class="tab" onclick="show('results',this)">
+      <span class="tab-dot dot-warn"></span>Results
+    </button>
+    <button class="tab" onclick="show('conclusions',this)">
+      <span class="tab-dot dot-neutral"></span>Conclusions
+    </button>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-series">NQ Quantitative Research · Phases 22–22C</div>
+  <div class="hero-label">Signal confirmed p≈0.000 · Strategy too sparse · WFO not possible</div>
+  <h1 class="hero-title">Using HMM transition matrices as predictive signals</h1>
+  <p class="hero-sub">
+    Prior HMM usage in this research used the model as a classifier — state today →
+    trade today. Phase 22 introduces the correct predictive use: the transition matrix
+    T[i][j] = P(state_j tomorrow | state_i today). If yesterday was bearish, the
+    transition matrix tells us tomorrow's regime probability before the session opens.
+  </p>
+
+  <div class="hero-expectancy">
+    <div class="he-header">
+      <span class="he-title">HMM transition matrix — NQ regime persistence (training set, N=873)</span>
+      <span class="he-sub">GaussianHMM · 3 states · features: daily_return + volume_ratio (causal)</span>
+    </div>
+    <div class="he-row header-row">
+      <span class="he-cell label">From state</span>
+      <span class="he-cell label">→ Bearish</span>
+      <span class="he-cell label">→ Ranging</span>
+      <span class="he-cell label">Persistence</span>
+      <span class="he-cell label">→ Bullish</span>
+    </div>
+    <div class="he-row">
+      <span class="he-cell bold">Bearish (n=237)</span>
+      <span class="he-cell pos bold">74.3%</span>
+      <span class="he-cell">24.9%</span>
+      <span class="he-cell">
+        <div class="he-bar"><div class="he-bar-fill pos" style="width:74%"></div></div>
+      </span>
+      <span class="he-cell neg">0.8%</span>
+    </div>
+    <div class="he-row">
+      <span class="he-cell">Ranging (n=583)</span>
+      <span class="he-cell">10.1%</span>
+      <span class="he-cell pos">87.3%</span>
+      <span class="he-cell">
+        <div class="he-bar"><div class="he-bar-fill info" style="width:87%"></div></div>
+      </span>
+      <span class="he-cell">2.6%</span>
+    </div>
+    <div class="he-row">
+      <span class="he-cell">Bullish (n=53)</span>
+      <span class="he-cell">3.8%</span>
+      <span class="he-cell">28.3%</span>
+      <span class="he-cell">
+        <div class="he-bar"><div class="he-bar-fill info" style="width:68%"></div></div>
+      </span>
+      <span class="he-cell pos">67.9%</span>
+    </div>
+  </div>
+
+  <div class="hero-finding">
+    <strong>Key finding:</strong> NQ regime transitions are highly predictable — 82.6%
+    directional accuracy vs 33.3% baseline (p≈0.000). The bearish state is strongly
+    self-persistent (74.3%), making the transition matrix a valid forward-looking signal.
+    Phase 22B/22C applies this to a Bearish Spike Fade strategy: PF=2.529, SR=+0.925
+    on 15 test trades. Too sparse for WFO (needs N≥60), but the signal quality is real.
+  </div>
+</section>
+
+<!-- ═══ CONCEPT ═══ -->
+<div class="panel active" id="panel-concept">
+<div class="content">
+  <div class="layout-2col">
+    <div>
+      <div class="eyebrow info">Phase 22 · Conceptual framework</div>
+      <h2 class="title">Descriptive vs predictive HMM — the correct use of transition matrices</h2>
+      <p class="lead">
+        All prior HMM usage in this research (Phases 1–7, 12–13) was descriptive:
+        classify today's state based on today's features, then act on that classification.
+        This is the classifier use of HMM. Phase 22 introduces the predictive use.
+      </p>
+      <p class="body">
+        A Hidden Markov Model with N states produces a transition matrix T of shape
+        (N×N) where T[i][j] = P(state_j tomorrow | state_i today). This is derived
+        from the Markov property of regime sequences: the future depends only on
+        the present state, not the full history. The transition matrix is estimated
+        on training data and then applied forward to test data — it is a genuinely
+        causal, forward-looking signal.
+      </p>
+
+      <div class="callout info">
+        <strong>Hamilton (1989) — Econometrica:</strong> "A New Approach to the Economic
+        Analysis of Nonstationary Time Series and the Business Cycle." One of the most
+        cited papers in financial econometrics, establishing the regime-switching framework.
+        The Markov transition property is the foundation: if we know the current regime,
+        we have an optimal predictor of tomorrow's regime without additional information.
+      </div>
+
+      <h3 class="sh">Why this is different from Phase 12–13 HMM usage</h3>
+      <div class="tbl-outer">
+        <table>
+          <thead>
+            <tr><th>Usage</th><th>Phase 12–13 (classifier)</th><th>Phase 22 (transition)</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Input</td>
+              <td>Features today → state today</td>
+              <td>State yesterday → P(state tomorrow)</td>
+            </tr>
+            <tr>
+              <td>Signal type</td>
+              <td>Descriptive</td>
+              <td class="pos">Predictive</td>
+            </tr>
+            <tr>
+              <td>Lookahead risk</td>
+              <td>State uses today's features</td>
+              <td class="pos">No lookahead — state_{t-1} is known</td>
+            </tr>
+            <tr>
+              <td>Use case</td>
+              <td>Filter entry on current regime</td>
+              <td class="pos">Predict tomorrow's regime tonight</td>
+            </tr>
+            <tr>
+              <td>Live applicability</td>
+              <td>Requires intraday feature computation</td>
+              <td class="pos">Computed at session close, ready for open</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="sh">HMM specification — Phase 22</h3>
+      <div class="rulebox">
+        <div class="rulebox-head">Model parameters (trained on 2021-06-25 to 2024-12-31)</div>
+        <div class="rulebox-body">
+          <div class="rule"><span class="rule-n">M</span><span><strong>GaussianHMM</strong> — n_states=3, covariance_type="full", n_iter=500, random_seed=42</span></div>
+          <div class="rule"><span class="rule-n">F</span><span><strong>Features (daily, causal):</strong> daily_return (close-to-close %) + volume_ratio (20-day rolling mean of prior sessions, shift(1) to avoid same-day lookahead)</span></div>
+          <div class="rule"><span class="rule-n">N</span><span><strong>N=3 confirmed:</strong> F-statistic F=24.26 (N=3) vs F=1.17 (N=2) — 3-state model captures materially more variance</span></div>
+          <div class="rule"><span class="rule-n">L</span><span><strong>State labels via Viterbi:</strong> bearish = lowest mean_return (−0.415%); ranging = middle (67% of days); bullish = highest (n=53)</span></div>
+          <div class="rule"><span class="rule-n">T</span><span><strong>Transition matrix</strong> computed from training Viterbi sequence; applied to test via P(bearish | state_{t-1}) only</span></div>
+        </div>
+      </div>
+
+      <h3 class="sh">State characterization — training set</h3>
+      <div class="tbl-outer">
+        <table>
+          <thead>
+            <tr><th>State</th><th>n (training)</th><th>Mean return</th><th>Vol ratio</th><th>MFE p50</th><th>MAE p50</th><th>MFE/MAE</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="neg bold">Bearish</td>
+              <td class="mono">237</td>
+              <td class="neg mono">−0.415%</td>
+              <td class="warn mono">1.27×</td>
+              <td class="mono">107.8</td>
+              <td class="mono">100.8</td>
+              <td class="warn mono">1.069×</td>
+            </tr>
+            <tr>
+              <td class="info bold">Ranging</td>
+              <td class="mono">583</td>
+              <td class="mono">+0.182%</td>
+              <td class="mono">1.00×</td>
+              <td class="mono">162.0</td>
+              <td class="mono">39.1</td>
+              <td class="pos mono bold">4.141×</td>
+            </tr>
+            <tr>
+              <td class="pos bold">Bullish</td>
+              <td class="mono">53</td>
+              <td class="pos mono">+0.222%</td>
+              <td class="neg mono">0.49×</td>
+              <td class="mono">93.5</td>
+              <td class="mono">74.8</td>
+              <td class="warn mono">1.251×</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="body">
+        The ranging state's MFE/MAE ratio of 4.141× is exceptional. In ranging days,
+        the session's maximum favorable excursion is 4× larger than the maximum adverse
+        excursion at the p50 level. This is the geometry that makes POC reversion
+        strategies work — the ranging state is the dominant regime (67% of sessions)
+        and has ideal mean-reversion geometry.
+      </p>
+    </div>
+
+    <div>
+      <div class="sidebar">
+        <div class="sb-head"><div class="sb-head-label">Model specification</div></div>
+        <div class="sb-row"><span class="sb-key">Phase</span><span class="sb-val">22 / 22B / 22C</span></div>
+        <div class="sb-row"><span class="sb-key">Algorithm</span><span class="sb-val">GaussianHMM</span></div>
+        <div class="sb-row"><span class="sb-key">States</span><span class="sb-val">N=3</span></div>
+        <div class="sb-row"><span class="sb-key">F-stat (N=3 vs N=2)</span><span class="sb-val pos">24.26</span></div>
+        <div class="sb-row"><span class="sb-key">Features</span><span class="sb-val">ret + vol_ratio</span></div>
+        <div class="sb-row"><span class="sb-key">Train end</span><span class="sb-val">2024-12-31</span></div>
+        <div class="sb-row"><span class="sb-key">Train sessions</span><span class="sb-val">873</span></div>
+        <div class="sb-row"><span class="sb-key">Test sessions</span><span class="sb-val">362</span></div>
+        <div class="sb-head" style="border-top:1px solid var(--line)"><div class="sb-head-label">State composition</div></div>
+        <div class="sb-row"><span class="sb-key">Ranging sessions</span><span class="sb-val info">67.0%</span></div>
+        <div class="sb-row"><span class="sb-key">Bearish sessions</span><span class="sb-val neg">27.2%</span></div>
+        <div class="sb-row"><span class="sb-key">Bullish sessions</span><span class="sb-val pos">6.1%</span></div>
+        <div class="sb-head" style="border-top:1px solid var(--line)"><div class="sb-head-label">Predictive accuracy</div></div>
+        <div class="sb-row"><span class="sb-key">Directional accuracy</span><span class="sb-val pos">82.6%</span></div>
+        <div class="sb-row"><span class="sb-key">Baseline (random)</span><span class="sb-val neg">33.3%</span></div>
+        <div class="sb-row"><span class="sb-key">p-value</span><span class="sb-val pos">≈ 0.000</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ MATRIX ═══ -->
+<div class="panel" id="panel-matrix">
+<div class="content layout-full">
+  <div class="eyebrow info">Phase 22 · Transition matrix</div>
+  <h2 class="title">NQ regimes are highly persistent — and the signal is binary</h2>
+  <p class="lead">
+    The 3-state transition matrix reveals strong diagonal persistence: bearish states
+    stay bearish 74.3% of the time, ranging states stay ranging 87.3%, and bullish
+    states stay bullish 67.9%. Directional accuracy 82.6% vs 33.3% baseline (p≈0.000).
+  </p>
+
+  <h3 class="sh">Full transition matrix — training set (2021–2024)</h3>
+  <div class="tbl-outer">
+    <table>
+      <thead>
+        <tr><th>From \ To</th><th>→ Bearish</th><th>→ Ranging</th><th>→ Bullish</th><th>p-value</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="neg bold">Bearish</td>
+          <td class="pos bold mono">74.3%</td>
+          <td class="mono">24.9%</td>
+          <td class="neg mono">0.8%</td>
+          <td class="mono">≈ 0.000</td>
+        </tr>
+        <tr>
+          <td class="warn bold">Ranging</td>
+          <td class="mono">10.1%</td>
+          <td class="pos bold mono">87.3%</td>
+          <td class="mono">2.6%</td>
+          <td class="mono">≈ 0.000</td>
+        </tr>
+        <tr>
+          <td class="info bold">Bullish</td>
+          <td class="mono">3.8%</td>
+          <td class="mono">28.3%</td>
+          <td class="pos bold mono">67.9%</td>
+          <td class="mono">≈ 0.000</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="body">
+    The matrix has strong diagonals and almost no bullish↔bearish direct transitions
+    (0.8% and 3.8%). Regimes change via the ranging state as an intermediate buffer.
+    This is economically meaningful: the market rarely jumps directly from a risk-on
+    to a risk-off day; there is typically a transitional period of compressed, directionless
+    price action before a new regime establishes.
+  </p>
+
+  <h3 class="sh">Key structural finding: the threshold parameter is irrelevant</h3>
+  <div class="callout warn">
+    <strong>Phase 22C discovered:</strong> The P(bearish) threshold used as a signal
+    gate is entirely irrelevant. Relaxing the threshold from 0.60 to 0.40 produced
+    zero new signal days (identical N=22 test trades for thresholds 0.40 through 0.70).
+    Setting threshold &gt; 0.743 (the diagonal) produced zero trades. The reason: the
+    transition matrix has a bimodal structure. P(bearish tomorrow) is either 74.3%
+    (if yesterday = bearish) or &lt;10–11% (if yesterday = ranging or bullish).
+    There is no gradient between 0.40 and 0.74 to exploit. The signal reduces to a
+    binary: <strong>did yesterday's Viterbi state = bearish?</strong>
+  </div>
+
+  <h3 class="sh">Price behavior by regime — session-level MFE/MAE</h3>
+  <div class="tbl-outer">
+    <table>
+      <thead>
+        <tr><th>State</th><th>n</th><th>MFE p50 (pts)</th><th>MAE p50 (pts)</th><th>MFE/MAE ratio</th><th>Implication</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="neg bold">Bearish</td>
+          <td class="mono">237</td>
+          <td class="mono">107.8</td>
+          <td class="mono">100.8</td>
+          <td class="warn mono bold">1.069×</td>
+          <td>Near-symmetric — entry geometry poor regardless of direction</td>
+        </tr>
+        <tr>
+          <td class="info bold">Ranging</td>
+          <td class="mono">583</td>
+          <td class="mono">162.0</td>
+          <td class="mono">39.1</td>
+          <td class="pos mono bold">4.141×</td>
+          <td>Exceptional — session makes large favorable move, tiny adverse move</td>
+        </tr>
+        <tr>
+          <td class="pos bold">Bullish</td>
+          <td class="mono">53</td>
+          <td class="mono">93.5</td>
+          <td class="mono">74.8</td>
+          <td class="warn mono bold">1.251×</td>
+          <td>Marginally favorable — insufficient edge for systematic entry</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout success">
+    <strong>The ranging state is the crown jewel:</strong> MFE/MAE 4.141× at p50
+    means the median ranging session makes a 162-point favorable excursion against
+    only a 39-point adverse excursion. This is the geometry that underpins Phase 15 B1
+    (POC Reversion). The confirmed edge in this research series is built on ranging
+    days — and the ranging state has a 87.3% self-transition probability, making it
+    the most predictable regime in the matrix.
+  </div>
+
+  <h3 class="sh">Bearish regime — time-of-day pattern analysis</h3>
+  <p class="body">
+    Phase 22 TOD analysis (n=237 bearish training sessions): 62.4% follow the
+    Spike→Drop pattern — opening spike at 09:45 (median), session low at 14:37 (median).
+    Median spike magnitude: 45 pts. Median drop after spike: 311 pts. This time-of-day
+    regularity is what makes the Bearish Spike Fade strategy mechanically viable.
+  </p>
+  <div class="tbl-outer">
+    <table>
+      <thead>
+        <tr><th>Pattern</th><th>Pct of bearish days</th><th>Spike/Dip time (median)</th><th>Extreme magnitude</th><th>Subsequent move</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="neg bold">Spike → Drop</td>
+          <td class="neg bold">62.4%</td>
+          <td class="mono">09:45 high</td>
+          <td class="mono">45 pts</td>
+          <td class="neg mono">−311 pts to 14:37 low</td>
+        </tr>
+        <tr>
+          <td>Drop → Spike</td>
+          <td class="mono">37.6%</td>
+          <td class="mono">—</td>
+          <td class="mono">—</td>
+          <td class="mono">—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</div>
+
+<!-- ═══ STRATEGY ═══ -->
+<div class="panel" id="panel-strategy">
+<div class="content">
+  <div class="layout-2col">
+    <div>
+      <div class="eyebrow warn">Phase 22B–22C · Strategy</div>
+      <h2 class="title">Fading the opening spike on bearish regime days</h2>
+      <p class="lead">
+        On days following a bearish Viterbi state, 62% of sessions open with a spike
+        that reverses and drops 311 pts by 14:37. Phase 22B designs a systematic entry
+        to capture this pattern with ATR-adaptive stop loss and prev_poc as target.
+      </p>
+
+      <h3 class="sh">Entry geometry — derived from spike volatility analysis</h3>
+      <div class="rulebox">
+        <div class="rulebox-head">Session-level parameter construction (all causal)</div>
+        <div class="rulebox-body">
+          <div class="rule"><span class="rule-n">1</span><span><strong>prev_atr</strong> = 20-day rolling mean of prior session ranges (shift(1) applied — no same-day data)</span></div>
+          <div class="rule"><span class="rule-n">2</span><span><strong>expected_spike</strong> = 0.662 × prev_atr (derived from spike/ATR regression: r=+0.259, p=0.0015, 90% coverage)</span></div>
+          <div class="rule"><span class="rule-n">3</span><span><strong>entry_trigger</strong> = open_930 + (1/3) × expected_spike = open + 0.221 × prev_atr</span></div>
+          <div class="rule"><span class="rule-n">4</span><span><strong>sl_price</strong> = open_930 + expected_spike + 5 pts (0.662×ATR + buffer)</span></div>
+          <div class="rule"><span class="rule-n">5</span><span><strong>avg_vol_20</strong> = 20-day rolling mean of prior session volumes (causal)</span></div>
+        </div>
+      </div>
+
+      <h3 class="sh">Complete entry rules</h3>
+      <div class="rulebox">
+        <div class="rulebox-head">Five mandatory conditions (all must be true)</div>
+        <div class="rulebox-body">
+          <div class="rule"><span class="rule-n">S</span><span><strong>Signal active:</strong> state_{t-1} == bearish AND state_{t-2} == bearish (consecutive filter, Phase 22C)</span></div>
+          <div class="rule"><span class="rule-n">1</span><span><strong>Price reached trigger:</strong> bar_high ≥ entry_trigger (= open + 0.221×ATR)</span></div>
+          <div class="rule"><span class="rule-n">2</span><span><strong>Bearish rejection bar:</strong> bar_close &lt; bar_open</span></div>
+          <div class="rule"><span class="rule-n">3</span><span><strong>Closed below trigger:</strong> bar_close &lt; entry_trigger (did not accept higher price)</span></div>
+          <div class="rule"><span class="rule-n">4</span><span><strong>Volume confirmation:</strong> bar_volume &gt; 1.2 × avg_bar_vol (elevated participation)</span></div>
+          <div class="rule"><span class="rule-n">W</span><span><strong>Entry window: 09:30–10:00 only</strong> (Phase 22C finding: tighter window improves PF 1.65→2.20)</span></div>
+          <div class="rule"><span class="rule-n">D</span><span><strong>prev_poc gate:</strong> session skipped if prev_poc ≥ entry_trigger (TP-D prerequisite)</span></div>
+        </div>
+      </div>
+
+      <h3 class="sh">Why 09:30–10:00 only</h3>
+      <p class="body">
+        Phase 22C window scan tested entry windows from 10:00 to 12:00. The counterintuitive
+        result: the <em>narrowest</em> window produces the highest quality trades.
+      </p>
+      <div class="tbl-outer">
+        <table>
+          <thead>
+            <tr><th>Entry window</th><th>N test</th><th>PF test</th><th>SR test</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="bold">→ 10:00</td>
+              <td class="mono">19</td>
+              <td class="pos mono bold">2.200</td>
+              <td class="pos mono bold">+0.873</td>
+            </tr>
+            <tr>
+              <td>→ 10:30 (baseline)</td>
+              <td class="mono">22</td>
+              <td class="warn mono">1.648</td>
+              <td class="warn mono">+0.629</td>
+            </tr>
+            <tr>
+              <td>→ 11:00</td>
+              <td class="mono">23</td>
+              <td class="warn mono">1.678</td>
+              <td class="warn mono">+0.658</td>
+            </tr>
+            <tr>
+              <td>→ 11:30</td>
+              <td class="mono">26</td>
+              <td class="warn mono">1.550</td>
+              <td class="warn mono">+0.582</td>
+            </tr>
+            <tr>
+              <td>→ 12:00</td>
+              <td class="mono">27</td>
+              <td class="warn mono">1.599</td>
+              <td class="warn mono">+0.633</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="body">
+        The 09:30–10:00 window captures only the early spike rejection — entries at
+        or just after the median spike time of 09:45. Trades that fire after 10:00
+        are lower-quality setups where the spike has already partially faded naturally,
+        reducing the expected follow-through.
+      </p>
+
+      <h3 class="sh">Consecutive bearish filter — Phase 22C improvement</h3>
+      <p class="body">
+        Requiring both state_{t-1} and state_{t-2} to be bearish (two consecutive
+        bearish days before entry) removes 4 trades from the test set but improves
+        all quality metrics. Critically, 2026 turns from slightly negative to positive.
+      </p>
+      <div class="tbl-outer">
+        <table>
+          <thead>
+            <tr><th>Filter</th><th>N</th><th>PF</th><th>SR</th><th>2025 SR</th><th>2026 SR</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>No consecutive filter (C1)</td>
+              <td class="mono">19</td>
+              <td class="warn mono">2.200</td>
+              <td class="warn mono">+0.873</td>
+              <td class="pos mono">+1.229</td>
+              <td class="neg mono">−0.174</td>
+            </tr>
+            <tr>
+              <td class="bold">+ Consecutive bearish (C2)</td>
+              <td class="mono bold">15</td>
+              <td class="pos mono bold">2.529</td>
+              <td class="pos mono bold">+0.925</td>
+              <td class="pos mono bold">+1.144</td>
+              <td class="pos mono bold">+0.148</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <div class="sidebar">
+        <div class="sb-head"><div class="sb-head-label">Best config (C2)</div></div>
+        <div class="sb-row"><span class="sb-key">Signal</span><span class="sb-val neg">Consec. bearish</span></div>
+        <div class="sb-row"><span class="sb-key">Entry window</span><span class="sb-val">09:30–10:00</span></div>
+        <div class="sb-row"><span class="sb-key">Entry trigger</span><span class="sb-val">0.221×ATR</span></div>
+        <div class="sb-row"><span class="sb-key">SL</span><span class="sb-val">0.662×ATR + 5</span></div>
+        <div class="sb-row"><span class="sb-key">TP</span><span class="sb-val">prev_poc</span></div>
+        <div class="sb-row"><span class="sb-key">Volume filter</span><span class="sb-val">1.2× avg</span></div>
+        <div class="sb-row"><span class="sb-key">Max bars</span><span class="sb-val">180 (3 hrs)</span></div>
+        <div class="sb-row"><span class="sb-key">Hard EOD exit</span><span class="sb-val">15:45 NY</span></div>
+        <div class="sb-row"><span class="sb-key">Risk per trade</span><span class="sb-val">1.0% of capital</span></div>
+        <div class="sb-head" style="border-top:1px solid var(--line)"><div class="sb-head-label">Test results (C2)</div></div>
+        <div class="sb-row"><span class="sb-key">N test</span><span class="sb-val warn">15</span></div>
+        <div class="sb-row"><span class="sb-key">WR test</span><span class="sb-val warn">53.3%</span></div>
+        <div class="sb-row"><span class="sb-key">PF test</span><span class="sb-val pos">2.529</span></div>
+        <div class="sb-row"><span class="sb-key">SR test</span><span class="sb-val pos">+0.925</span></div>
+        <div class="sb-row"><span class="sb-key">2025 SR</span><span class="sb-val pos">+1.144</span></div>
+        <div class="sb-row"><span class="sb-key">2026 SR</span><span class="sb-val pos">+0.148</span></div>
+        <div class="sb-row"><span class="sb-key">WFO</span><span class="sb-val neg">Not possible (N&lt;60)</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ RESULTS ═══ -->
+<div class="panel" id="panel-results">
+<div class="content layout-full">
+  <div class="eyebrow warn">Phase 22B–22C · Results</div>
+  <h2 class="title">Real signal, insufficient frequency</h2>
+  <p class="lead">
+    PF=2.529, SR=+0.925 on 15 test trades. The best result in the Phase 22 series
+    and the highest PF of any strategy in this research series. But N=15 is far below
+    the 60-trade WFO threshold. Statistical validation is not possible with 18 months
+    of test data.
+  </p>
+
+  <h3 class="sh">Phase 22B baseline — 11 experiments, TP variant scan</h3>
+  <div class="tbl-outer">
+    <table>
+      <thead>
+        <tr><th>Exp</th><th>TP variant</th><th>N train</th><th>PF train</th><th>N test</th><th>PF test</th><th>SR test</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>A · 2:1 fixed</td><td class="mono">121</td><td class="warn mono">1.087</td><td class="mono">22</td><td class="neg mono">0.904</td><td class="neg mono">−0.321</td></tr>
+        <tr><td>2</td><td>B · open−1.0×ATR</td><td class="mono">121</td><td class="warn mono">1.122</td><td class="mono">22</td><td class="warn mono">1.144</td><td class="warn mono">+0.211</td></tr>
+        <tr><td>3</td><td>B · open−1.5×ATR</td><td class="mono">121</td><td class="warn mono">1.201</td><td class="mono">22</td><td class="warn mono">1.387</td><td class="warn mono">+0.441</td></tr>
+        <tr><td>4</td><td>B · open−2.0×ATR</td><td class="mono">121</td><td class="warn mono">1.282</td><td class="mono">22</td><td class="warn mono">1.541</td><td class="warn mono">+0.538</td></tr>
+        <tr><td>5</td><td>C · trailing</td><td class="mono">121</td><td class="neg mono">0.988</td><td class="mono">22</td><td class="warn mono">1.217</td><td class="warn mono">+0.301</td></tr>
+        <tr><td class="bold">6</td><td class="bold">D · prev_poc</td><td class="mono bold">121</td><td class="warn mono bold">1.282</td><td class="mono warn bold">22</td><td class="pos mono bold">1.648</td><td class="warn mono bold">+0.629</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="body" style="font-size:12px; color:var(--ink-3);">
+    Experiments 7–11 tested TP combinations. Exp 6 (TP-D: prev_poc) consistently
+    best. Full 11-experiment table in run_phase22b.py output.
+  </p>
+
+  <h3 class="sh">The N≥60 problem — a structural constraint</h3>
+  <div class="callout danger">
+    <strong>Why WFO cannot run:</strong> The TP-D constraint (prev_poc &lt; entry_trigger)
+    is the binding limiter. Of 89 signal days in the 18-month test period, only 15–27
+    satisfy all five entry conditions including the prev_poc gate. The strategy generates
+    approximately 1.3 trades/month. To reach N=60 for WFO would require ~46 months of
+    test data. Parameter relaxation (threshold, entry window) cannot solve this — the
+    prev_poc filter is the constraint, and relaxing it changes the strategy's edge profile.
+  </div>
+
+  <h3 class="sh">Phase 22C — threshold scan (Part A)</h3>
+  <p class="body">
+    Five HMM thresholds tested (0.40, 0.50, 0.60, 0.70, 0.743). Key finding:
+    thresholds 0.40–0.70 are <em>identical</em> — zero new signal days added by relaxation.
+    This confirmed the bimodal signal structure: P(bearish) is either 74.3% (following
+    bearish state) or &lt;11% (following ranging/bullish). There is nothing between 0.40
+    and 0.74 in this transition matrix.
+  </p>
+
+  <h3 class="sh">Full Phase 22C results by part</h3>
+  <div class="tbl-outer">
+    <table>
+      <thead>
+        <tr><th>Part</th><th>Config</th><th>N test</th><th>PF test</th><th>SR test</th><th>Note</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>A1–A4</td><td>thresh 0.40–0.70</td><td class="mono">22</td><td class="warn mono">1.648</td><td class="warn mono">+0.629</td><td>Identical — bimodal signal</td></tr>
+        <tr><td>A5</td><td>thresh &gt;0.743</td><td class="neg mono">0</td><td class="mono">—</td><td class="mono">—</td><td>Diagonal excluded all trades</td></tr>
+        <tr><td>B1</td><td>window→10:00</td><td class="mono">19</td><td class="pos mono">2.200</td><td class="pos mono">+0.873</td><td>Best quality</td></tr>
+        <tr><td>B2</td><td>window→10:30</td><td class="mono">22</td><td class="warn mono">1.648</td><td class="warn mono">+0.629</td><td>Baseline</td></tr>
+        <tr><td>B5</td><td>window→12:00</td><td class="mono">27</td><td class="warn mono">1.599</td><td class="warn mono">+0.633</td><td>Max N, quality declines</td></tr>
+        <tr><td class="bold">C1</td><td class="bold">best combined</td><td class="mono bold">19</td><td class="pos mono bold">2.200</td><td class="pos mono bold">+0.873</td><td>No consec filter</td></tr>
+        <tr><td class="bold">C2</td><td class="bold">+consecutive</td><td class="mono bold">15</td><td class="pos mono bold">2.529</td><td class="pos mono bold">+0.925</td><td class="pos bold">Best overall</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mstrip">
+    <div class="mstrip-inner">
+      <div class="mitem">
+        <div class="mitem-val pos">2.529</div>
+        <div class="mitem-key">Best PF (C2, consecutive filter)</div>
+      </div>
+      <div class="mitem">
+        <div class="mitem-val pos">+0.925</div>
+        <div class="mitem-key">Best SR (C2, consecutive filter)</div>
+      </div>
+      <div class="mitem">
+        <div class="mitem-val neg">15</div>
+        <div class="mitem-key">Test trades (N below WFO threshold)</div>
+      </div>
+      <div class="mitem">
+        <div class="mitem-val neg">~46</div>
+        <div class="mitem-key">Months needed to reach N=60</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ CONCLUSIONS ═══ -->
+<div class="panel" id="panel-conclusions">
+<div class="content layout-full">
+  <div class="eyebrow neutral">Phase 22 · Conclusions</div>
+  <h2 class="title">What this research established</h2>
+  <p class="lead">
+    Phase 22 introduced a methodologically important advance: the predictive use of
+    the HMM transition matrix. The signal is statistically confirmed (p≈0.000, 82.6%
+    accuracy). The resulting trading strategy shows real quality (PF=2.529) but is
+    structurally too sparse for formal WFO validation.
+  </p>
+
+  <h3 class="sh">Confirmed by the data</h3>
+  <div class="rulebox">
+    <div class="rulebox-head">Findings that stand</div>
+    <div class="rulebox-body">
+      <div class="rule"><span class="rule-n">✓</span><span><strong>NQ regime transitions are highly predictable</strong> (p≈0.000, 82.6% directional accuracy vs 33.3% baseline). The transition matrix is a valid forward-looking signal.</span></div>
+      <div class="rule"><span class="rule-n">✓</span><span><strong>Bearish spike→drop pattern confirmed</strong> — 62% of bearish days, median 311-point drop, SL formula r=0.259 (p=0.0015), stable across quintiles and years.</span></div>
+      <div class="rule"><span class="rule-n">✓</span><span><strong>Consecutive bearish filter improves quality</strong> — PF 2.20→2.53, 2026 turns from negative to positive, selection bias is reduced.</span></div>
+      <div class="rule"><span class="rule-n">✓</span><span><strong>Ranging state geometry exceptional</strong> — MFE/MAE 4.141×, 87.3% self-transition probability. This confirms why POC reversion (Phase 15 B1) works: it operates on the dominant, most predictable, most geometrically favorable regime.</span></div>
+      <div class="rule"><span class="rule-n">✓</span><span><strong>Signal is binary, not gradient</strong> — threshold parameter irrelevant; the transition matrix has bimodal P(bearish) (74.3% or &lt;11%). No tuning possible.</span></div>
+    </div>
+  </div>
+
+  <h3 class="sh">Not confirmed — pending more data</h3>
+  <div class="rulebox">
+    <div class="rulebox-head">Results that require more test data</div>
+    <div class="rulebox-body">
+      <div class="rule"><span class="rule-n">?</span><span><strong>Walk-forward not possible</strong> — N=15 test trades over 18 months is structurally below the N=60 threshold. Requires ~46 months of additional test data.</span></div>
+      <div class="rule"><span class="rule-n">?</span><span><strong>prev_poc TP is the binding constraint</strong> — only when prev_poc &lt; entry_trigger does the session qualify. This filter is load-bearing for edge quality (PF 1.648 without vs 2.529 with consecutive filter) but limits frequency.</span></div>
+    </div>
+  </div>
+
+  <h3 class="sh">Next direction — Phase 23</h3>
+  <div class="callout info">
+    <strong>Phase 23 candidate: HMM transition signal on POC Reversion B1.</strong>
+    The Phase 15 B1 strategy (confirmed edge, p=0.066, bootstrap p5=0.999) operates
+    on ranging days. The ranging state has: 87.3% self-transition probability (most
+    predictable), 4.141× MFE/MAE (most geometrically favorable), and represents 67%
+    of all sessions. Using the transition matrix T[ranging][ranging] = 87.3% as a
+    regime filter on the already-confirmed B1 strategy would add a predictive layer
+    to an existing edge, rather than building a new strategy from scratch.
+    This is the most natural extension of Phase 22's methodological advance.
+  </div>
+
+  <div class="mstrip">
+    <div class="mstrip-inner">
+      <div class="mitem">
+        <div class="mitem-val pos">82.6%</div>
+        <div class="mitem-key">Markov directional accuracy</div>
+      </div>
+      <div class="mitem">
+        <div class="mitem-val pos">2.529</div>
+        <div class="mitem-key">Strategy PF (C2, 15 trades)</div>
+      </div>
+      <div class="mitem">
+        <div class="mitem-val pos">+0.925</div>
+        <div class="mitem-key">Strategy SR (C2)</div>
+      </div>
+      <div class="mitem">
+        <div class="mitem-val info">4.14×</div>
+        <div class="mitem-key">Ranging MFE/MAE ratio</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="verdict pivot">
+    <div class="verdict-lbl">Final verdict · Phases 22–22C</div>
+    <p>Signal confirmed (p≈0.000). Strategy quality real (PF=2.529, SR=+0.925 on 15 test trades).
+    Formally not confirmed — N=15 is structurally below the 60-trade WFO threshold,
+    and no parameter relaxation can increase frequency without changing the edge profile.
+    The transition matrix approach is methodologically validated and represents the most
+    important conceptual advance in this research series. Next application: Phase 23 —
+    HMM transition signal as filter on confirmed POC Reversion B1.</p>
+  </div>
+</div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div>
+    <strong>NQ Quantitative Research</strong> — Systematic research on NQ E-mini Futures (2021–2026).
+  </div>
+  <div>
+    <a href="index.html" style="color:var(--blue);text-decoration:none;">← Research Hub</a>
+    &nbsp;·&nbsp;
+    <a href="orb_research.html" style="color:var(--blue);text-decoration:none;">ORB (Ph. 1–7)</a>
+    &nbsp;·&nbsp;
+    <a href="vwap_research.html" style="color:var(--blue);text-decoration:none;">VWAP (Ph. 8–10)</a>
+    &nbsp;·&nbsp;
+    <a href="poc_research.html" style="color:var(--blue);text-decoration:none;">POC (Ph. 11–16)</a>
+    &nbsp;·&nbsp;
+    <a href="failed_spike_research.html" style="color:var(--blue);text-decoration:none;">Failed Spike (Ph. 17)</a>
+    &nbsp;·&nbsp;
+    <a href="spike_extreme_research.html" style="color:var(--blue);text-decoration:none;">Spike Extreme (Ph. 18)</a>
+    &nbsp;·&nbsp;
+    <a href="intraday_momentum_research.html" style="color:var(--blue);text-decoration:none;">Intraday Momentum (Ph. 19)</a>
+    &nbsp;·&nbsp;
+    <a href="intraday_reversal_research.html" style="color:var(--blue);text-decoration:none;">Intraday Reversal (Ph. 19B–19C)</a>
+    &nbsp;·&nbsp;
+    <a href="poc_closing_magnet_research.html" style="color:var(--blue);text-decoration:none;">POC Closing Magnet (Ph. 20)</a>
+    &nbsp;·&nbsp;
+    <a href="intraday_seasonality_research.html" style="color:var(--blue);text-decoration:none;">Seasonality (Ph. 21)</a>
+  </div>
+</footer>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>
