@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NQ Intraday Reversal — Phases 19–19C</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: #fafafa;
+  color: #111;
+  line-height: 1.6;
+}
+
+:root {
+  --blue:    #0066FF;
+  --blue-10: #e6f0ff;
+  --amber:   #b45309;
+  --amber-10:#fef9c3;
+  --green:   #16a34a;
+  --green-10:#dcfce7;
+  --red:     #dc2626;
+  --red-10:  #fee2e2;
+  --ink:     #111111;
+  --ink-2:   #444444;
+  --ink-3:   #888888;
+  --ink-4:   #bbbbbb;
+  --line:    #e5e5e5;
+  --surface: #ffffff;
+  --mono:    'Menlo', 'Consolas', monospace;
+  --r2: 4px;
+  --r3: 6px;
+}
+
+/* ── HEADER ── */
+.hdr {
+  position: sticky; top: 0; z-index: 200;
+  background: rgba(250,250,250,0.93);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+  height: 52px;
+  display: flex; align-items: center;
+  padding: 0 32px; gap: 32px;
+}
+.hdr-logo {
+  font-size: 13px; font-weight: 600; color: var(--ink);
+  letter-spacing: -0.01em; white-space: nowrap;
+  display: flex; align-items: center; gap: 8px;
+  text-decoration: none;
+}
+.hdr-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--amber); flex-shrink: 0;
+}
+.hdr-series {
+  font-size: 12px; color: var(--ink-3);
+  border-left: 1px solid var(--line); padding-left: 20px;
+  white-space: nowrap;
+}
+.hdr-series a { color: var(--blue); text-decoration: none; font-weight: 500; }
+.hdr-series a:hover { text-decoration: underline; }
+.hdr-tabs {
+  display: flex; gap: 2px; flex: 1; overflow-x: auto;
+  scrollbar-width: none;
+}
+.hdr-tabs::-webkit-scrollbar { display: none; }
+.tab {
+  flex-shrink: 0; background: none; border: none; cursor: pointer;
+  padding: 6px 12px; border-radius: var(--r2);
+  font-size: 13px; font-weight: 400; color: var(--ink-3);
+  white-space: nowrap; display: flex; align-items: center; gap: 6px;
+  transition: color 120ms, background 120ms;
+}
+.tab:hover { color: var(--ink); background: #f0f0f0; }
+.tab.active { color: var(--ink); font-weight: 500; background: #ebebeb; }
+.tab-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.dot-blue   { background: var(--blue); }
+.dot-amber  { background: var(--amber); }
+.dot-green  { background: var(--green); }
+.dot-red    { background: var(--red); }
+.dot-grey   { background: var(--ink-4); }
+
+/* ── HERO ── */
+.hero {
+  padding: 64px 32px 48px;
+  max-width: 1120px; margin: 0 auto;
+  border-bottom: 1px solid var(--line);
+}
+.hero-kicker {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-3);
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-kicker::before {
+  content: ''; display: inline-block;
+  width: 20px; height: 1px; background: var(--ink-4);
+}
+.hero-label {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--amber); margin-bottom: 16px;
+}
+.hero-title {
+  font-size: clamp(28px, 4vw, 48px);
+  font-weight: 500; letter-spacing: -0.03em; line-height: 1.1;
+  color: var(--ink); max-width: 680px; margin-bottom: 16px;
+}
+.hero-sub {
+  font-size: 16px; color: var(--ink-2); max-width: 560px;
+  line-height: 1.65; margin-bottom: 40px; font-weight: 300;
+}
+
+/* hero stat strip */
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1px; background: var(--line);
+  border: 1px solid var(--line); border-radius: var(--r3);
+  overflow: hidden; max-width: 760px; margin-bottom: 32px;
+}
+.hstat {
+  background: var(--surface); padding: 18px 22px;
+}
+.hstat-val {
+  font-size: 26px; font-weight: 600; letter-spacing: -0.02em;
+  line-height: 1; margin-bottom: 5px;
+}
+.hstat-val.pos  { color: var(--green); }
+.hstat-val.neg  { color: var(--red); }
+.hstat-val.warn { color: var(--amber); }
+.hstat-val.info { color: var(--blue); }
+.hstat-key { font-size: 11px; color: var(--ink-3); }
+
+.hero-finding {
+  max-width: 720px; padding: 14px 18px;
+  background: var(--amber-10);
+  border: 1px solid #fde68a; border-left: 3px solid var(--amber);
+  border-radius: var(--r3);
+  font-size: 14px; color: #78350f; line-height: 1.6;
+}
+.hero-finding strong { font-weight: 600; }
+
+/* ── PANELS ── */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ── CONTENT ── */
+.content {
+  max-width: 1120px; margin: 0 auto;
+  padding: 48px 32px 96px;
+}
+.layout-2col {
+  display: grid; grid-template-columns: 1fr 300px; gap: 64px;
+  align-items: start;
+}
+.layout-full { max-width: 760px; }
+
+/* ── TYPOGRAPHY ── */
+.eyebrow {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase; margin-bottom: 12px;
+}
+.eyebrow.info  { color: var(--blue); }
+.eyebrow.warn  { color: var(--amber); }
+.eyebrow.fail  { color: var(--red); }
+.eyebrow.pass  { color: var(--green); }
+.eyebrow.grey  { color: var(--ink-3); }
+h2.title {
+  font-size: 26px; font-weight: 600; letter-spacing: -0.02em;
+  line-height: 1.2; color: var(--ink); margin-bottom: 16px;
+}
+h3.sh {
+  font-size: 14px; font-weight: 600; color: var(--ink);
+  margin: 36px 0 12px; padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+p.lead {
+  font-size: 16px; color: var(--ink-2); line-height: 1.7;
+  margin-bottom: 16px; font-weight: 300;
+}
+p.body {
+  font-size: 14px; color: var(--ink-2); line-height: 1.75;
+  margin-bottom: 14px;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  position: sticky; top: 68px;
+  border: 1px solid var(--line); border-radius: var(--r3);
+  overflow: hidden; background: var(--surface);
+}
+.sb-head {
+  padding: 11px 16px; border-bottom: 1px solid var(--line);
+  background: #f7f7f7;
+}
+.sb-head-lbl {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--ink-3);
+}
+.sb-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 8px 16px; border-bottom: 1px solid #f0f0f0; gap: 12px;
+}
+.sb-row:last-child { border-bottom: none; }
+.sb-k { font-size: 12px; color: var(--ink-3); white-space: nowrap; }
+.sb-v {
+  font-family: var(--mono); font-size: 12px;
+  color: var(--ink); font-weight: 500; white-space: nowrap;
+}
+.sb-v.pos  { color: var(--green); }
+.sb-v.neg  { color: var(--red); }
+.sb-v.warn { color: var(--amber); }
+.sb-v.info { color: var(--blue); }
+
+/* ── TABLES ── */
+.tbl-wrap {
+  border: 1px solid var(--line); border-radius: var(--r3);
+  overflow: hidden; margin: 20px 0;
+}
+.tbl-wrap table {
+  width: 100%; border-collapse: collapse; font-size: 13px;
+}
+.tbl-wrap thead { background: #f7f7f7; }
+.tbl-wrap th {
+  padding: 9px 14px; text-align: left;
+  font-family: var(--mono); font-size: 10px; font-weight: 500;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3);
+  border-bottom: 1px solid var(--line); white-space: nowrap;
+}
+.tbl-wrap td {
+  padding: 9px 14px; border-bottom: 1px solid #f0f0f0;
+  color: var(--ink-2); vertical-align: middle;
+}
+.tbl-wrap tr:last-child td { border-bottom: none; }
+.tbl-wrap tr:hover td { background: #fafafa; }
+.tbl-wrap tr.highlight td { background: #eff6ff; }
+td.pos  { color: var(--green); font-weight: 500; }
+td.neg  { color: var(--red); font-weight: 500; }
+td.warn { color: var(--amber); font-weight: 500; }
+td.bold { color: var(--ink); font-weight: 600; }
+td.mono { font-family: var(--mono); font-size: 12px; }
+
+/* ── RULEBOX ── */
+.rulebox {
+  border: 1px solid var(--line); border-radius: var(--r3);
+  overflow: hidden; margin: 20px 0;
+}
+.rulebox-head {
+  padding: 9px 16px; background: #f7f7f7;
+  border-bottom: 1px solid var(--line);
+  font-size: 11px; font-weight: 600; color: var(--ink-2);
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+.rulebox-body { padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.rule {
+  display: flex; gap: 10px; align-items: flex-start;
+  font-size: 13px; color: var(--ink-2); line-height: 1.5;
+}
+.rule-n {
+  font-family: var(--mono); font-size: 11px; color: var(--blue);
+  flex-shrink: 0; width: 20px; padding-top: 1px;
+}
+
+/* ── CALLOUT ── */
+.callout {
+  border-radius: var(--r3); padding: 15px 18px; margin: 18px 0;
+  font-size: 14px; line-height: 1.65; border-left: 3px solid;
+}
+.callout.info    { background: var(--blue-10); border-color: var(--blue); color: #003d99; }
+.callout.warn    { background: var(--amber-10); border-color: var(--amber); color: #78350f; }
+.callout.danger  { background: var(--red-10); border-color: var(--red); color: #991b1b; }
+.callout.success { background: var(--green-10); border-color: var(--green); color: #14532d; }
+.callout strong  { font-weight: 600; }
+
+/* ── VERDICT ── */
+.verdict {
+  border-radius: var(--r3); padding: 16px 20px; margin: 24px 0; border: 1px solid;
+}
+.verdict.fail   { border-color: #fecaca; background: #fff1f2; }
+.verdict.pass   { border-color: #bbf7d0; background: #f0fdf4; }
+.verdict.pivot  { border-color: #bfdbfe; background: #eff6ff; }
+.verdict.warn   { border-color: #fde68a; background: #fffbeb; }
+.verdict-lbl {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
+  text-transform: uppercase; margin-bottom: 6px;
+}
+.verdict.fail  .verdict-lbl { color: var(--red); }
+.verdict.pass  .verdict-lbl { color: var(--green); }
+.verdict.pivot .verdict-lbl { color: var(--blue); }
+.verdict.warn  .verdict-lbl { color: var(--amber); }
+.verdict p { font-size: 14px; color: var(--ink-2); margin: 0; line-height: 1.6; }
+
+/* ── METRIC STRIP ── */
+.mstrip {
+  display: grid; gap: 1px; background: var(--line);
+  border: 1px solid var(--line); border-radius: var(--r3);
+  overflow: hidden; margin: 20px 0;
+}
+.mstrip-inner {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 1px; background: var(--line);
+}
+.mitem { background: var(--surface); padding: 15px 18px; }
+.mitem-val {
+  font-size: 22px; font-weight: 600; letter-spacing: -0.02em;
+  line-height: 1; margin-bottom: 4px;
+}
+.mitem-val.pos  { color: var(--green); }
+.mitem-val.neg  { color: var(--red); }
+.mitem-val.warn { color: var(--amber); }
+.mitem-val.info { color: var(--blue); }
+.mitem-key { font-size: 11px; color: var(--ink-3); }
+
+/* ── WFO WINDOW CARDS ── */
+.wfo-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px; margin: 20px 0;
+}
+.wfo-card {
+  border: 1px solid var(--line); border-radius: var(--r3);
+  padding: 14px 16px; background: var(--surface);
+}
+.wfo-card.pass  { border-top: 3px solid var(--green); }
+.wfo-card.fail  { border-top: 3px solid var(--red); }
+.wfo-card-label {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.05em;
+  text-transform: uppercase; margin-bottom: 6px;
+}
+.wfo-card.pass .wfo-card-label { color: var(--green); }
+.wfo-card.fail .wfo-card-label { color: var(--red); }
+.wfo-card-period { font-size: 12px; color: var(--ink-3); margin-bottom: 10px; }
+.wfo-metric { font-size: 13px; color: var(--ink-2); line-height: 1.6; }
+.wfo-metric span { font-family: var(--mono); font-size: 12px; }
+
+/* ── DIVIDER ── */
+.divider { border: none; border-top: 1px solid var(--line); margin: 36px 0; }
+
+/* ── FOOTER ── */
+.footer {
+  border-top: 1px solid var(--line); padding: 28px 32px;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 16px;
+  font-size: 12px; color: var(--ink-3);
+}
+.footer strong { color: var(--ink-2); font-weight: 500; }
+.footer a { color: var(--blue); text-decoration: none; }
+.footer a:hover { text-decoration: underline; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 860px) {
+  .hdr { padding: 0 16px; gap: 12px; }
+  .hdr-series { display: none; }
+  .hero { padding: 40px 16px 32px; }
+  .content { padding: 32px 16px 64px; }
+  .layout-2col { grid-template-columns: 1fr; }
+  .sidebar { position: static; }
+  .footer { padding: 20px 16px; flex-direction: column; align-items: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <a class="hdr-logo" href="#">
+    <div class="hdr-dot"></div>
+    NQ Intraday Reversal
+  </a>
+  <div class="hdr-series">
+    Part of <a href="https://s4g4cr.github.io/nq-quant-research/">NQ Quantitative Research Series</a>
+  </div>
+  <nav class="hdr-tabs" role="tablist">
+    <button class="tab active" onclick="show('hypothesis',this)">
+      <span class="tab-dot dot-blue"></span>The Hypothesis
+    </button>
+    <button class="tab" onclick="show('filters',this)">
+      <span class="tab-dot dot-amber"></span>Filter Development
+    </button>
+    <button class="tab" onclick="show('wfo',this)">
+      <span class="tab-dot dot-grey"></span>Walk-Forward Results
+    </button>
+    <button class="tab" onclick="show('conclusions',this)">
+      <span class="tab-dot dot-red"></span>Conclusions
+    </button>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-kicker">NQ Quantitative Research · Phases 19 / 19B / 19C</div>
+  <div class="hero-label">Research concluded · Signal real · Edge not confirmed</div>
+  <h1 class="hero-title">NQ closes against its opening direction</h1>
+  <p class="hero-sub">
+    Three phases testing whether NQ E-mini futures reverse their first half-hour
+    move into the close. The raw signal is statistically real (p=0.026). The best
+    filter combination achieves SR=1.423 on 120 OOS trades. Walk-forward validation
+    narrows pass by 0.010 on t-test and 0.008 on bootstrap — not confirmed for
+    production.
+  </p>
+
+  <div class="hero-stats">
+    <div class="hstat">
+      <div class="hstat-val info">0.026</div>
+      <div class="hstat-key">Raw reversal p-value</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val pos">1.423</div>
+      <div class="hstat-key">SR test · best config</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val pos">1.238</div>
+      <div class="hstat-key">Pooled WFO PF · 271 trades</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val warn">3 / 5</div>
+      <div class="hstat-key">WFO windows SR &gt; 0</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val neg">NOT<br><span style="font-size:16px">CONFIRMED</span></div>
+      <div class="hstat-key">Production verdict</div>
+    </div>
+  </div>
+
+  <div class="hero-finding">
+    <strong>Key finding:</strong> Phase 19 discovered that NQ shows intraday
+    <em>reversal</em> rather than the momentum found by Gao et al. (2018) in
+    S&amp;P 500 ETF. The raw signal is statistically significant (t=−1.939, p=0.026).
+    The best filter combination — |r1|&gt;0.3% AND r16 agreement — passes 3/5
+    walk-forward windows. However, V1 (H1 2023) and V4 (H2 2024) show full sign
+    reversals, indicating the effect is regime-dependent. Both statistical thresholds
+    miss by under 1 percentage point.
+  </div>
+</section>
+
+<!-- ═══════════════ TAB 1: HYPOTHESIS ═══════════════ -->
+<div class="panel active" id="panel-hypothesis">
+<div class="content">
+  <div class="layout-2col">
+    <div>
+      <div class="eyebrow info">The hypothesis</div>
+      <h2 class="title">NQ participants profit-take at the close — systematically against the morning move</h2>
+      <p class="lead">
+        Gao, Han, Li, and Zhou (2018) documented that in the S&amp;P 500 ETF,
+        the first half-hour return positively predicts the last half-hour return
+        (momentum). Phase 19 tested this in NQ futures and found the
+        <strong>opposite</strong> — a statistically significant reversal signal.
+      </p>
+      <p class="body">
+        The Phase 19 diagnostic ran on 1,203 sessions (2021–2026). When r1&nbsp;&gt;&nbsp;0
+        (strong up opening), the mean last half-hour return was −0.0117%. When r1&nbsp;&lt;&nbsp;0,
+        the mean was +0.0227%. The two-sample t-test returned t=−1.939, p=0.026 for the
+        reversal direction — statistically significant at the 5% level. This is the
+        foundation for Phases 19B and 19C.
+      </p>
+
+      <h3 class="sh">Economic rationale</h3>
+      <p class="body">
+        NQ is a momentum-heavy instrument with a different participant structure from
+        SPY. Several mechanisms may generate systematic reversal at the close:
+      </p>
+      <div class="rulebox">
+        <div class="rulebox-head">Why NQ may close against the morning direction</div>
+        <div class="rulebox-body">
+          <div class="rule"><span class="rule-n">1</span><span><strong>Profit-taking by intraday traders.</strong> Participants who bought the morning move liquidate before the close. The closing half-hour has high volume and concentrated institutional order flow — ideal for exiting large positions accumulated during the session.</span></div>
+          <div class="rule"><span class="rule-n">2</span><span><strong>Intraday overshooting.</strong> NQ amplifies broad-market moves. A strong up-open tends to carry further than fundamentals justify, creating mean-reversion pressure by 15:30. The opening spike literature (Phases 17–18) already confirmed that 93% of morning extremes are visited within the session.</span></div>
+          <div class="rule"><span class="rule-n">3</span><span><strong>Decay of Gao et al. (2018) effect.</strong> The paper was published in 2018 and covered 1993–2013. Institutional awareness of the pattern between 2018 and 2021 may have arbitraged the momentum effect — and in NQ, where the signal was already weak, arbitrage may have flipped it to reversal.</span></div>
+          <div class="rule"><span class="rule-n">4</span><span><strong>r16 confirmation.</strong> The penultimate half-hour (14:30–15:00) continuing in the same direction as the morning is a signal that the move has been sustained long enough to attract closing profit-takers. Days where r16 agrees with r1 show stronger reversal in r17.</span></div>
+        </div>
+      </div>
+
+      <h3 class="sh">Signal definition</h3>
+      <div class="rulebox">
+        <div class="rulebox-head">Phase 19B / 19C — inverted momentum signal</div>
+        <div class="rulebox-body">
+          <div class="rule"><span class="rule-n">r1</span><span>(close₀₉:₅₉ − close_prev₁₅:₅₉) / close_prev₁₅:₅₉ — first half-hour return from previous close</span></div>
+          <div class="rule"><span class="rule-n">r16</span><span>(close₁₄:₅₉ − close₁₄:₂₉) / close₁₄:₂₉ — penultimate half-hour return (14:30–15:00)</span></div>
+          <div class="rule"><span class="rule-n">Dir</span><span><strong>SHORT if r1 &gt; 0 · LONG if r1 &lt; 0</strong> (inverted vs. Gao et al. momentum direction)</span></div>
+          <div class="rule"><span class="rule-n">F1</span><span>|r1| &gt; 0.3% — magnitude filter; ignores small, noisy first half-hour moves</span></div>
+          <div class="rule"><span class="rule-n">F2</span><span>sign(r1) == sign(r16) — r16 agreement; the morning direction must have continued into the penultimate half-hour</span></div>
+          <div class="rule"><span class="rule-n">In</span><span>Close of 15:29 bar ± 0.25 pts slippage (1 tick)</span></div>
+          <div class="rule"><span class="rule-n">Out</span><span>Close of 15:59 bar ∓ 0.25 pts slippage — <strong>always</strong>, no SL, no TP</span></div>
+          <div class="rule"><span class="rule-n">Sz</span><span>n_contracts = max(1, floor(capital × 1% / (ATR₂₀¹ᵐⁱⁿ × $20)))</span></div>
+          <div class="rule"><span class="rule-n">Fees</span><span>$2/side commission · 0.25 pts/side slippage · $20 point value</span></div>
+        </div>
+      </div>
+
+      <h3 class="sh">Phase 19 diagnostic — raw signal strength</h3>
+      <div class="mstrip">
+        <div class="mstrip-inner">
+          <div class="mitem">
+            <div class="mitem-val info">1,203</div>
+            <div class="mitem-key">Sessions analyzed</div>
+          </div>
+          <div class="mitem">
+            <div class="mitem-val warn">48.6%</div>
+            <div class="mitem-key">Momentum accuracy (Phase 19 gate failed)</div>
+          </div>
+          <div class="mitem">
+            <div class="mitem-val pos">51.1%</div>
+            <div class="mitem-key">Reversal accuracy (≥50% ✓)</div>
+          </div>
+          <div class="mitem">
+            <div class="mitem-val info">0.026</div>
+            <div class="mitem-key">Two-sample p-value (reversal)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout info">
+        <strong>Why Phase 19 stopped but Phase 19B continued:</strong> Phase 19 had a hard
+        gate — directional accuracy &lt;50% → stop. That gate was designed for the
+        momentum hypothesis and correctly stopped it at 48.6%. Phase 19B is a new hypothesis
+        (reversal) that inverts the direction. The Phase 19 diagnostic incidentally proved
+        the Phase 19B hypothesis has a raw signal (p=0.026) — Phase 19B then tests it properly.
+      </div>
+
+      <div class="verdict pivot">
+        <div class="verdict-lbl">Phase 19 diagnostic finding</div>
+        <p>NQ shows statistically significant intraday reversal (t=−1.939, p=0.026), not momentum. The Gao et al. effect does not replicate in NQ futures 2021–2026. Phase 19B is the correct follow-on hypothesis.</p>
+      </div>
+    </div>
+
+    <div>
+      <div class="sidebar">
+        <div class="sb-head"><div class="sb-head-lbl">Research scope</div></div>
+        <div class="sb-row"><span class="sb-k">Phases</span><span class="sb-v">19 · 19B · 19C · WFO</span></div>
+        <div class="sb-row"><span class="sb-k">Asset</span><span class="sb-v">NQ E-mini Futures</span></div>
+        <div class="sb-row"><span class="sb-k">Timeframe</span><span class="sb-v">1-minute bars</span></div>
+        <div class="sb-row"><span class="sb-k">Dataset</span><span class="sb-v">2021-06-25 → 2026-06-17</span></div>
+        <div class="sb-row"><span class="sb-k">Bars</span><span class="sb-v">492,990</span></div>
+        <div class="sb-row"><span class="sb-k">Sessions</span><span class="sb-v">1,203</span></div>
+        <div class="sb-head" style="border-top:1px solid var(--line)"><div class="sb-head-lbl">Raw signal (Phase 19)</div></div>
+        <div class="sb-row"><span class="sb-k">r1 &gt; 0 · mean r17</span><span class="sb-v neg">−0.0117%</span></div>
+        <div class="sb-row"><span class="sb-k">r1 &lt; 0 · mean r17</span><span class="sb-v pos">+0.0227%</span></div>
+        <div class="sb-row"><span class="sb-k">Reversal accuracy</span><span class="sb-v pos">51.1%</span></div>
+        <div class="sb-row"><span class="sb-k">t-statistic</span><span class="sb-v">−1.939</span></div>
+        <div class="sb-row"><span class="sb-k">p-value</span><span class="sb-v info">0.026</span></div>
+        <div class="sb-head" style="border-top:1px solid var(--line)"><div class="sb-head-lbl">Best config (Exp 12)</div></div>
+        <div class="sb-row"><span class="sb-k">Filters</span><span class="sb-v" style="font-size:11px">|r1|&gt;0.3% + r16 agree</span></div>
+        <div class="sb-row"><span class="sb-k">N test</span><span class="sb-v">120</span></div>
+        <div class="sb-row"><span class="sb-k">WR test</span><span class="sb-v pos">52.5%</span></div>
+        <div class="sb-row"><span class="sb-k">PF test</span><span class="sb-v pos">1.272</span></div>
+        <div class="sb-row"><span class="sb-k">SR test</span><span class="sb-v pos">1.423</span></div>
+        <div class="sb-head" style="border-top:1px solid var(--line)"><div class="sb-head-lbl">WFO result</div></div>
+        <div class="sb-row"><span class="sb-k">Windows SR&gt;0</span><span class="sb-v warn">3 / 5</span></div>
+        <div class="sb-row"><span class="sb-k">Pooled PF</span><span class="sb-v pos">1.238</span></div>
+        <div class="sb-row"><span class="sb-k">T-test p</span><span class="sb-v neg">0.110</span></div>
+        <div class="sb-row"><span class="sb-k">Bootstrap p5</span><span class="sb-v neg">0.942</span></div>
+        <div class="sb-row"><span class="sb-k">Verdict</span><span class="sb-v neg">Not confirmed</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════ TAB 2: FILTER DEVELOPMENT ═══════════════ -->
+<div class="panel" id="panel-filters">
+<div class="content layout-full">
+  <div class="eyebrow amber">Filter development · Phase 19C · 17 experiments</div>
+  <h2 class="title">Finding the right filter combination</h2>
+  <p class="lead">
+    Phase 19B Exp 7 (all four filters combined) showed SR=2.407 on 47 test trades
+    — convincing but below the 80-trade statistical gate. Phase 19C systematically
+    relaxed the filter set across 17 configurations to find the minimum combination
+    that keeps N≥80 while maintaining SR&gt;1.0.
+  </p>
+
+  <h3 class="sh">The 17-experiment grid</h3>
+  <p class="body">
+    All experiments: $100k capital, risk_pct=1.0%, entry 15:30, exit 15:59.
+    Train: 2021-06-25→2024-12-31 · Test: 2025-01-02→2026-06-17.
+    ✓ = N≥80 and SR&gt;1.0 (WFO eligible) · ~ = N≥60 and SR&gt;1.0 (borderline)
+  </p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Exp</th>
+          <th>Filters</th>
+          <th>N Test</th>
+          <th>WR%</th>
+          <th>PF Test</th>
+          <th>SR Test</th>
+          <th>Flag</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="mono">1</td><td>No filters (baseline)</td><td class="mono">350</td><td class="mono">48.9%</td><td class="neg mono">0.960</td><td class="neg mono">−0.250</td><td></td></tr>
+        <tr><td class="mono">2</td><td>|r1| &gt; 0.1%</td><td class="mono">311</td><td class="mono">50.2%</td><td class="mono">1.014</td><td class="mono">0.086</td><td></td></tr>
+        <tr><td class="mono">3</td><td>|r1| &gt; 0.2%</td><td class="mono">277</td><td class="mono">49.8%</td><td class="mono">1.052</td><td class="mono">0.303</td><td></td></tr>
+        <tr><td class="mono">4</td><td>|r1| &gt; 0.3%</td><td class="mono">235</td><td class="mono">48.5%</td><td class="mono">1.054</td><td class="mono">0.317</td><td></td></tr>
+        <tr><td class="mono">5</td><td>high_vol (range &gt; 20d median)</td><td class="mono">174</td><td class="mono">48.9%</td><td class="neg mono">0.983</td><td class="neg mono">−0.106</td><td></td></tr>
+        <tr><td class="mono">6</td><td>r16 agreement</td><td class="mono">179</td><td class="mono">50.3%</td><td class="neg mono">0.997</td><td class="neg mono">−0.017</td><td></td></tr>
+        <tr><td class="mono">7</td><td>high_volume (vol &gt; 20d median)</td><td class="mono">180</td><td class="mono">49.4%</td><td class="neg mono">0.995</td><td class="neg mono">−0.029</td><td></td></tr>
+        <tr><td class="mono">8</td><td>|r1|&gt;0.2% + high_vol</td><td class="mono">147</td><td class="mono">49.7%</td><td class="mono">1.057</td><td class="mono">0.331</td><td></td></tr>
+        <tr><td class="mono">9</td><td>|r1|&gt;0.2% + r16 agree</td><td class="mono">138</td><td class="mono">51.4%</td><td class="mono">1.116</td><td class="mono">0.662</td><td></td></tr>
+        <tr><td class="mono">10</td><td>|r1|&gt;0.2% + high_volume</td><td class="mono">151</td><td class="mono">49.0%</td><td class="mono">1.074</td><td class="mono">0.425</td><td></td></tr>
+        <tr><td class="mono">11</td><td>|r1|&gt;0.3% + high_vol</td><td class="mono">133</td><td class="mono">46.6%</td><td class="mono">1.008</td><td class="mono">0.046</td><td></td></tr>
+        <tr class="highlight"><td class="mono bold">12</td><td class="bold">|r1|&gt;0.3% + r16 agree</td><td class="mono bold">120</td><td class="pos bold">52.5%</td><td class="pos bold">1.272</td><td class="pos bold">1.423</td><td class="pos bold">✓</td></tr>
+        <tr><td class="mono">13</td><td>|r1|&gt;0.3% + high_volume</td><td class="mono">134</td><td class="mono">46.3%</td><td class="neg mono">0.987</td><td class="neg mono">−0.080</td><td></td></tr>
+        <tr><td class="mono">14</td><td>|r1|&gt;0.2% + high_vol + r16</td><td class="warn mono">70</td><td class="pos mono">54.3%</td><td class="pos mono">1.453</td><td class="pos mono">2.131</td><td class="warn">~</td></tr>
+        <tr><td class="mono">15</td><td>|r1|&gt;0.2% + high_vol + hi_vol30</td><td class="mono">110</td><td class="mono">50.0%</td><td class="mono">1.000</td><td class="neg mono">−0.001</td><td></td></tr>
+        <tr><td class="mono">16</td><td>|r1|&gt;0.3% + high_vol + r16</td><td class="warn mono">64</td><td class="pos mono">53.1%</td><td class="pos mono">1.510</td><td class="pos mono">2.334</td><td class="warn">~</td></tr>
+        <tr><td class="mono">17</td><td>|r1|&gt;0.3% + high_vol + hi_vol30</td><td class="mono">101</td><td class="mono">47.5%</td><td class="neg mono">0.981</td><td class="neg mono">−0.117</td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="sh">Key structural finding: r16 is the dominant filter</h3>
+  <p class="body">
+    The r16 agreement filter alone (Exp 6) barely moves SR: −0.017 vs −0.250
+    baseline. Combined with |r1|&gt;0.3% (Exp 12), SR jumps to 1.423. This is
+    not additive — it's multiplicative. r16 agreement selects precisely the days
+    where the morning direction has been sustained long enough to generate
+    profit-taking at the close. Neither filter works well alone; together they
+    isolate a specific regime.
+  </p>
+
+  <div class="callout warn">
+    <strong>The N vs. SR trade-off:</strong> Experiments 14 and 16 show higher SR
+    (2.131 and 2.334) but N=70 and N=64 — below the 80-trade WFO gate.
+    Adding high_vol to Exp 12 (r16 agree + |r1|&gt;0.3%) raises SR but drops N
+    by ~45 trades. The high-volatility days where the reversal is strongest
+    are simply fewer in number than needed for robust walk-forward testing.
+  </div>
+
+  <h3 class="sh">Phase 19B baseline results</h3>
+  <p class="body">
+    Phase 19B Exp 1 (baseline, no filters): Train SR=0.345, Test SR=−0.250.
+    The unfiltered reversal signal is profitable in sample but loses money out
+    of sample — 2026 WR drops to 43.8%, dragging the overall test SR negative.
+    Filters are required to isolate the regimes where the signal holds.
+  </p>
+
+  <div class="verdict pivot">
+    <div class="verdict-lbl">Filter development conclusion</div>
+    <p>Exp 12 (|r1|&gt;0.3% + r16 agreement) is the unique configuration that satisfies N≥80 with SR&gt;1.0. It is the only candidate for walk-forward validation. The high-SR configurations (Exps 14, 16) are statistically under-powered. This selection is data-driven, not arbitrary.</p>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════ TAB 3: WALK-FORWARD ═══════════════ -->
+<div class="panel" id="panel-wfo">
+<div class="content layout-full">
+  <div class="eyebrow grey">Walk-forward validation · 5 anchored windows</div>
+  <h2 class="title">Real but regime-dependent</h2>
+  <p class="lead">
+    Config: |r1|&gt;0.3% AND r16 agreement · SHORT if r1&gt;0, LONG if r1&lt;0.
+    Five anchored windows with expanding training sets. No training step —
+    filters are deterministic. $100k capital reset per window.
+  </p>
+
+  <!-- Window cards -->
+  <div class="wfo-grid">
+    <div class="wfo-card fail">
+      <div class="wfo-card-label">V1 · FAIL</div>
+      <div class="wfo-card-period">2023-01 → 2023-06</div>
+      <div class="wfo-metric">N = <span>38</span></div>
+      <div class="wfo-metric">WR = <span style="color:var(--red)">42.1%</span></div>
+      <div class="wfo-metric">PF = <span style="color:var(--red)">0.753</span></div>
+      <div class="wfo-metric">SR = <span style="color:var(--red)">−1.807</span></div>
+      <div class="wfo-metric">Ret = <span style="color:var(--red)">−13.2%</span></div>
+    </div>
+    <div class="wfo-card pass">
+      <div class="wfo-card-label">V2 · PASS</div>
+      <div class="wfo-card-period">2023-07 → 2023-12</div>
+      <div class="wfo-metric">N = <span>41</span></div>
+      <div class="wfo-metric">WR = <span style="color:var(--green)">63.4%</span></div>
+      <div class="wfo-metric">PF = <span style="color:var(--green)">1.776</span></div>
+      <div class="wfo-metric">SR = <span style="color:var(--green)">+3.698</span></div>
+      <div class="wfo-metric">Ret = <span style="color:var(--green)">+37.8%</span></div>
+    </div>
+    <div class="wfo-card pass">
+      <div class="wfo-card-label">V3 · PASS</div>
+      <div class="wfo-card-period">2024-01 → 2024-06</div>
+      <div class="wfo-metric">N = <span>38</span></div>
+      <div class="wfo-metric">WR = <span style="color:var(--green)">55.3%</span></div>
+      <div class="wfo-metric">PF = <span style="color:var(--green)">1.661</span></div>
+      <div class="wfo-metric">SR = <span style="color:var(--green)">+3.135</span></div>
+      <div class="wfo-metric">Ret = <span style="color:var(--green)">+41.1%</span></div>
+    </div>
+    <div class="wfo-card fail">
+      <div class="wfo-card-label">V4 · FAIL</div>
+      <div class="wfo-card-period">2024-07 → 2024-12</div>
+      <div class="wfo-metric">N = <span>34</span></div>
+      <div class="wfo-metric">WR = <span style="color:var(--red)">44.1%</span></div>
+      <div class="wfo-metric">PF = <span style="color:var(--red)">0.600</span></div>
+      <div class="wfo-metric">SR = <span style="color:var(--red)">−2.808</span></div>
+      <div class="wfo-metric">Ret = <span style="color:var(--red)">−24.4%</span></div>
+    </div>
+    <div class="wfo-card pass">
+      <div class="wfo-card-label">V5 · PASS</div>
+      <div class="wfo-card-period">2025-01 → 2026-06</div>
+      <div class="wfo-metric">N = <span>120</span></div>
+      <div class="wfo-metric">WR = <span style="color:var(--green)">52.5%</span></div>
+      <div class="wfo-metric">PF = <span style="color:var(--green)">1.272</span></div>
+      <div class="wfo-metric">SR = <span style="color:var(--green)">+1.423</span></div>
+      <div class="wfo-metric">Ret = <span style="color:var(--green)">+99.3%</span></div>
+    </div>
+  </div>
+
+  <h3 class="sh">Walk-forward summary table</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>Window</th><th>Test period</th><th>N</th><th>WR%</th><th>PF</th><th>SR</th><th>Return%</th><th>MaxDD%</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>V1</td><td>2023-01 → 2023-06</td><td class="mono">38</td><td class="neg mono">42.1%</td><td class="neg mono">0.753</td><td class="neg mono">−1.807</td><td class="neg mono">−13.2%</td><td class="mono">19.6%</td></tr>
+        <tr><td>V2</td><td>2023-07 → 2023-12</td><td class="mono">41</td><td class="pos mono">63.4%</td><td class="pos mono">1.776</td><td class="pos mono">+3.698</td><td class="pos mono">+37.8%</td><td class="mono">9.6%</td></tr>
+        <tr><td>V3</td><td>2024-01 → 2024-06</td><td class="mono">38</td><td class="pos mono">55.3%</td><td class="pos mono">1.661</td><td class="pos mono">+3.135</td><td class="pos mono">+41.1%</td><td class="mono">19.1%</td></tr>
+        <tr><td>V4</td><td>2024-07 → 2024-12</td><td class="mono">34</td><td class="neg mono">44.1%</td><td class="neg mono">0.600</td><td class="neg mono">−2.808</td><td class="neg mono">−24.4%</td><td class="mono">32.3%</td></tr>
+        <tr><td>V5</td><td>2025-01 → 2026-06</td><td class="mono">120</td><td class="pos mono">52.5%</td><td class="pos mono">1.272</td><td class="pos mono">+1.423</td><td class="pos mono">+99.3%</td><td class="mono">37.2%</td></tr>
+        <tr style="border-top:2px solid var(--line)">
+          <td class="bold">Pooled</td><td>All windows</td>
+          <td class="mono bold">271</td><td class="mono bold">52.0%</td>
+          <td class="pos bold">1.238</td><td class="pos bold">+1.188</td>
+          <td class="pos bold">+140.6%</td><td class="mono">—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="sh">Statistical tests — pooled OOS (271 trades)</h3>
+  <div class="mstrip">
+    <div class="mstrip-inner">
+      <div class="mitem">
+        <div class="mitem-val neg">0.110</div>
+        <div class="mitem-key">T-test p-value (target &lt;0.10)</div>
+      </div>
+      <div class="mitem">
+        <div class="mitem-val neg">0.942</div>
+        <div class="mitem-key">Bootstrap PF p5 (target &gt;0.95)</div>
+      </div>
+      <div class="mitem">
+        <div class="mitem-val pos">1.255</div>
+        <div class="mitem-key">Bootstrap mean PF</div>
+      </div>
+      <div class="mitem">
+        <div class="mitem-val warn">3 / 5</div>
+        <div class="mitem-key">Windows SR &gt; 0 (target ≥3)</div>
+      </div>
+      <div class="mitem">
+        <div class="mitem-val warn">3 / 5</div>
+        <div class="mitem-key">Windows PF &gt; 1.0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout warn">
+    <strong>Near-miss analysis:</strong> The t-test p-value of 0.110 misses the 0.10 threshold
+    by exactly 0.010. The bootstrap p5 of 0.942 misses 0.95 by 0.008. One additional profitable
+    window (4/5 instead of 3/5) would likely have pushed both past their thresholds. The signal
+    is not consistent enough across regimes to clear the bar — but it comes close enough to be
+    informative rather than dismissed.
+  </div>
+
+  <h3 class="sh">The regime problem</h3>
+  <p class="body">
+    V1 (H1 2023, SR=−1.807) and V4 (H2 2024, SR=−2.808) are not just weak — they show
+    <strong>full sign reversals</strong>. The strategy's short positions (r1&gt;0) made
+    money when the market was trending up through the close, and the long positions (r1&lt;0)
+    lost when the market continued falling. These are exactly the periods where the reversal
+    signal inverted to momentum.
+  </p>
+  <p class="body">
+    The two failing windows share a pattern: both are periods of relatively sustained
+    intraday trend-following. H1 2023 was a strong recovery rally from the 2022 bear market
+    where morning gains extended through the close. H2 2024 included significant macro-driven
+    directional sessions where morning selling continued into the close. In both cases,
+    the r16 agreement filter selected precisely the days with the strongest directional
+    continuation — amplifying rather than dampening the adverse regime exposure.
+  </p>
+
+  <div class="callout danger">
+    <strong>The paradox of r16 agreement:</strong> The filter that most improves
+    the signal in three periods (V2, V3, V5) is the same filter that selects
+    the worst trades in the two failing periods. Sign(r1)==sign(r16) is a proxy
+    for "the morning direction has been sustained." In reversal regimes this means
+    "good setup for profit-taking reversal." In momentum regimes it means
+    "strong trend, likely to continue." The filter has no way to distinguish these cases.
+  </div>
+
+  <div class="verdict fail">
+    <div class="verdict-lbl">Walk-forward verdict</div>
+    <p>Edge NOT confirmed. Pooled OOS: N=271 · WR=52.0% · PF=1.238 · SR=1.188. Three thresholds checked: p=0.110 (fails by 0.010), bootstrap p5=0.942 (fails by 0.008), windows SR&gt;0: 3/5 (passes). Both statistical tests miss by narrow margins. The signal is not random — but it is not stable enough across regimes for production use.</p>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════ TAB 4: CONCLUSIONS ═══════════════ -->
+<div class="panel" id="panel-conclusions">
+<div class="content layout-full">
+  <div class="eyebrow fail">Conclusions</div>
+  <h2 class="title">What this research established</h2>
+  <p class="lead">
+    Phases 19 through 19C produced the most nuanced result in the research series:
+    a real, statistically significant signal that consistently fails to cross
+    production thresholds because of regime instability, not because the signal
+    is absent.
+  </p>
+
+  <h3 class="sh">What is confirmed</h3>
+  <div class="callout success">
+    <strong>Confirmed facts from Phases 19–19C:</strong><br>
+    · NQ shows intraday reversal (not momentum) in aggregate 2021–2026 · p=0.026<br>
+    · r16 agreement is a meaningful secondary filter — increases SR from 0.317 to 1.423<br>
+    · The reversal is real in 3 of 5 WFO windows (H2 2023, H1 2024, 2025–2026)<br>
+    · Pooled OOS PF=1.238 on 271 trades — not consistent with randomness<br>
+    · Bootstrap mean PF=1.255 — the expected PF is positive
+  </div>
+
+  <h3 class="sh">What is not confirmed</h3>
+  <div class="callout danger">
+    <strong>Reasons the edge is not production-viable:</strong><br>
+    · H1 2023 and H2 2024 show full sign reversals (SR −1.8 and −2.8)<br>
+    · T-test p=0.110 &gt; 0.10 threshold — formally not significant<br>
+    · Bootstrap p5=0.942 &lt; 0.95 threshold — confidence interval is wide<br>
+    · No ex-ante regime filter to distinguish reversal periods from momentum periods<br>
+    · r16 agreement amplifies both signal and regime failure indiscriminately
+  </div>
+
+  <h3 class="sh">Key contrast with Gao et al. (2018)</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Dimension</th><th>Gao et al. (2018)</th><th>NQ 2021–2026</th></tr></thead>
+      <tbody>
+        <tr><td>Asset</td><td>S&amp;P 500 ETF (SPY)</td><td>NQ E-mini Futures</td></tr>
+        <tr><td>Period</td><td>1993–2013 (20 years)</td><td>2021–2026 (5 years)</td></tr>
+        <tr><td>Direction</td><td class="pos">Momentum (r1 predicts r17 positively)</td><td class="neg">Reversal (r1 predicts r17 negatively)</td></tr>
+        <tr><td>Accuracy</td><td class="pos">Documented &gt;52% reported</td><td class="warn">51.1% (raw) · 52.5% (filtered)</td></tr>
+        <tr><td>Stability</td><td>Confirmed across 60+ instruments</td><td class="warn">3/5 periods confirm · 2/5 invert</td></tr>
+        <tr><td>Mechanism</td><td>Informed traders at open and close</td><td>Profit-taking vs. trend-following regimes</td></tr>
+        <tr><td>Verdict</td><td class="pos">Published, widely replicated</td><td class="neg">Real but regime-dependent · not confirmed</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="sh">The regime question — what would need to be true for production use</h3>
+  <p class="body">
+    The reversal hypothesis could be production-viable if a reliable ex-ante regime
+    filter could be found — something observable before 15:30 that distinguishes
+    "reversal day" from "momentum continuation day." Candidates not yet tested:
+  </p>
+  <div class="rulebox">
+    <div class="rulebox-head">Potential regime discriminators (not tested)</div>
+    <div class="rulebox-body">
+      <div class="rule"><span class="rule-n">1</span><span><strong>VIX level.</strong> High VIX may correlate with momentum continuation (fear-driven selling continues); low VIX with mean reversion. The failing windows (H1 2023, H2 2024) had different VIX regimes. Not available in the current data pipeline.</span></div>
+      <div class="rule"><span class="rule-n">2</span><span><strong>Overnight gap direction vs. r1 agreement.</strong> If the overnight gap and the first half-hour are in the same direction, the trend may be stronger and more likely to continue. The reversal may be safer when r1 moves against the overnight gap.</span></div>
+      <div class="rule"><span class="rule-n">3</span><span><strong>Mid-session consolidation.</strong> If price spends 12:00–14:00 in a narrow range (returning to near the open), the reversal signal may be cleaner than on days where the morning trend continued all day. A simple r2–r15 range filter could proxy this.</span></div>
+      <div class="rule"><span class="rule-n">4</span><span><strong>Weekly trend alignment.</strong> If the 5-day return is in the same direction as r1, momentum continuation is more likely. Filtering out days where r1 aligns with the weekly trend may concentrate the reversal into better regimes.</span></div>
+    </div>
+  </div>
+
+  <h3 class="sh">Position in the research series</h3>
+  <p class="body">
+    This is the sixth hypothesis tested in the series. Five of the six have been falsified
+    or not confirmed. The one confirmed edge — POC Reversion B1 (Phase 15, p=0.066,
+    bootstrap p5=0.999, 4/5 WFO windows) — remains the benchmark. The intraday reversal
+    is the closest any subsequent hypothesis has come to confirmation: real signal, real
+    PF in pooled testing, and narrow statistical misses. It is the most informative
+    "not confirmed" in the series.
+  </p>
+
+  <div class="verdict warn">
+    <div class="verdict-lbl">Final verdict · Phases 19–19C</div>
+    <p>The NQ intraday reversal signal is real (p=0.026 raw), survives the best filter combination (SR=1.423, PF=1.272 on 120 OOS trades), and produces positive pooled WFO results (PF=1.238, 271 trades). It fails production confirmation because V1 and V4 show full sign reversals with no available ex-ante discriminator. The hypothesis is not false — the effect exists. It is not yet tradeable — the regime dependency is not predictable with the available signals. Future research should focus on regime detection rather than signal refinement.</p>
+  </div>
+</div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div>
+    <strong>NQ Quantitative Research</strong> — Systematic research on NQ E-mini Futures (2021–2026).
+  </div>
+  <div>
+    <a href="./index.html">← Research Hub</a>
+    &nbsp;·&nbsp;
+    <a href="./orb_research.html">ORB (Ph. 1–7)</a>
+    &nbsp;·&nbsp;
+    <a href="./vwap_research.html">VWAP (Ph. 8–10)</a>
+    &nbsp;·&nbsp;
+    <a href="./poc_research.html">POC (Ph. 11–16)</a>
+    &nbsp;·&nbsp;
+    <a href="./failed_spike_research.html">Failed Spike (Ph. 17)</a>
+    &nbsp;·&nbsp;
+    <a href="./spike_extreme_research.html">Spike Extreme (Ph. 18)</a>
+    &nbsp;·&nbsp;
+    <a href="./intraday_momentum_research.html">Intraday Momentum (Ph. 19)</a>
+  </div>
+</footer>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>

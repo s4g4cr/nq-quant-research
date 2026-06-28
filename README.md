@@ -1,7 +1,7 @@
 # NQ Quantitative Research
 
 Systematic quantitative research on NQ E-mini Futures.
-Five research cycles. Four hypotheses falsified. One confirmed
+Six research cycles. Five hypotheses falsified or not confirmed. One confirmed
 statistically. Built on a shared Python infrastructure:
 event-driven backtester, walk-forward validation,
 and bootstrap Monte Carlo sizing.
@@ -18,10 +18,11 @@ and bootstrap Monte Carlo sizing.
 | [Failed Spike Reversion](docs/failed_spike_research.html) | Opening 5-min spike failure fade · Phase 17 | No edge · reversion real (71.3%) but entry geometry structurally negative |
 | [Spike Extreme S/R](docs/spike_extreme_research.html) | Spike extreme as support/resistance · Phase 18 | No edge · geometry fixed (ATR SL) but OOS win rate collapsed 12pp |
 | [Intraday Momentum](docs/intraday_momentum_research.html) | Gao et al. (2018) replication · first 30-min return predicts last · Phase 19 | No edge · directional accuracy 48.6% · NQ shows reversal (p=0.026) not momentum |
+| [Intraday Reversal](docs/intraday_reversal_research.html) | Inverse Gao et al. · SHORT when r1>0 · 17-experiment filter optimization · Phases 19B–19C | Not confirmed · SR=1.423 OOS · WFO 3/5 windows · p=0.110 (misses by 0.010) |
 
 Interactive documentation with full phase-by-phase results, equity curves, and parameter tables.
 
-All five are accessible from the research hub:
+All six are accessible from the research hub:
 
 **[Research Hub — s4g4cr.github.io/nq-quant-research](https://s4g4cr.github.io/nq-quant-research/)**
 
@@ -33,6 +34,7 @@ All five are accessible from the research hub:
 | Failed Spike (Phase 17) | [s4g4cr.github.io/nq-quant-research/failed_spike_research.html](https://s4g4cr.github.io/nq-quant-research/failed_spike_research.html) |
 | Spike Extreme (Phase 18) | [s4g4cr.github.io/nq-quant-research/spike_extreme_research.html](https://s4g4cr.github.io/nq-quant-research/spike_extreme_research.html) |
 | Intraday Momentum (Phase 19) | [s4g4cr.github.io/nq-quant-research/intraday_momentum_research.html](https://s4g4cr.github.io/nq-quant-research/intraday_momentum_research.html) |
+| Intraday Reversal (Phases 19B–19C) | [s4g4cr.github.io/nq-quant-research/intraday_reversal_research.html](https://s4g4cr.github.io/nq-quant-research/intraday_reversal_research.html) |
 
 ---
 
@@ -80,7 +82,8 @@ nq-quant-research/
 │   ├── poc_reversion.py     — POC mean reversion engine (Phases 11–16, CONFIRMED)
 │   ├── failed_spike.py      — Failed spike reversion engine (Phase 17, falsified)
 │   ├── spike_extreme_reversion.py — Spike extreme S/R engine (Phase 18, falsified)
-   └── intraday_momentum.py       — Gao et al. momentum engine (Phase 19, falsified)
+│   ├── intraday_momentum.py       — Gao et al. momentum engine (Phase 19, falsified)
+   └── intraday_reversal.py        — Inverse momentum reversal engine (Phases 19B–19C, not confirmed)
 ├── indicators/
 │   ├── technical.py         — ATR, VWAP, rolling indicators
 │   └── volume_profile.py    — prev_poc and session_poc (strictly causal)
@@ -94,13 +97,14 @@ nq-quant-research/
 │   ├── strategy/
 │   └── regime/
 ├── docs/
-│   ├── index.html                  — Research hub (landing page, links to all four)
-│   ├── orb_research.html           — ORB + HMM research (Phases 1–7)
-│   ├── vwap_research.html          — VWAP research (Phases 8–10)
-│   ├── poc_research.html           — POC Reversion research (Phases 11–16)
-│   ├── failed_spike_research.html  — Failed Spike research (Phase 17)
-│   ├── spike_extreme_research.html — Spike Extreme S/R research (Phase 18)
-   └── intraday_momentum_research.html — Intraday Momentum research (Phase 19)
+│   ├── index.html                        — Research hub (landing page, links to all six)
+│   ├── orb_research.html                 — ORB + HMM research (Phases 1–7)
+│   ├── vwap_research.html                — VWAP research (Phases 8–10)
+│   ├── poc_research.html                 — POC Reversion research (Phases 11–16)
+│   ├── failed_spike_research.html        — Failed Spike research (Phase 17)
+│   ├── spike_extreme_research.html       — Spike Extreme S/R research (Phase 18)
+│   ├── intraday_momentum_research.html   — Intraday Momentum research (Phase 19)
+   └── intraday_reversal_research.html    — Intraday Reversal research (Phases 19B–19C)
 └── run_phase*.py            — phase entry-points
 ```
 
@@ -167,6 +171,11 @@ python run_phase18.py
 
 # Intraday Momentum research (Phase 19)
 python run_phase19.py
+
+# Intraday Reversal research (Phases 19B–19C)
+python run_phase19b.py
+python run_phase19c.py
+python run_phase19c_wfo.py
 ```
 
 ---
