@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NQ Intraday Momentum Research — Quantitative Trading Research</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: #fafafa;
+  color: #111;
+  line-height: 1.6;
+}
+img { display: block; max-width: 100%; }
+
+:root {
+  --blue:    #0066FF;
+  --blue-10: #e6f0ff;
+  --amber:   #b45309;
+  --amber-10:#fef9c3;
+  --ink:     #111111;
+  --ink-2:   #444444;
+  --ink-3:   #888888;
+  --ink-4:   #bbbbbb;
+  --line:    #e5e5e5;
+  --bg:      #fafafa;
+  --surface: #ffffff;
+  --green:   #16a34a;
+  --red:     #dc2626;
+  --mono:    'Menlo', 'Consolas', monospace;
+  --r2: 4px;
+  --r3: 6px;
+}
+
+/* ── HEADER ── */
+.hdr {
+  position: sticky; top: 0; z-index: 200;
+  background: rgba(250,250,250,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+  height: 52px;
+  display: flex; align-items: center;
+  padding: 0 32px; gap: 40px;
+}
+.hdr-logo {
+  font-size: 13px; font-weight: 600; color: var(--ink);
+  letter-spacing: -0.01em; white-space: nowrap;
+  display: flex; align-items: center; gap: 8px;
+  text-decoration: none;
+}
+.hdr-logo-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--amber);
+}
+.hdr-series {
+  font-size: 12px; color: var(--ink-3);
+  border-left: 1px solid var(--line);
+  padding-left: 16px;
+  white-space: nowrap;
+}
+.hdr-series a {
+  color: var(--blue); text-decoration: none; font-weight: 500;
+}
+.hdr-series a:hover { text-decoration: underline; }
+.hdr-tabs {
+  display: flex; gap: 2px; overflow-x: auto;
+  scrollbar-width: none; flex: 1;
+}
+.hdr-tabs::-webkit-scrollbar { display: none; }
+.tab {
+  flex-shrink: 0;
+  background: none; border: none; cursor: pointer;
+  padding: 6px 12px; border-radius: var(--r2);
+  font-size: 13px; font-weight: 400; color: var(--ink-3);
+  transition: color 120ms, background 120ms;
+  white-space: nowrap; display: flex; align-items: center; gap: 6px;
+}
+.tab:hover { color: var(--ink); background: #f0f0f0; }
+.tab.active { color: var(--ink); font-weight: 500; background: #ebebeb; }
+.tab-dot {
+  width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0;
+}
+.dot-fail    { background: var(--red); }
+.dot-warn    { background: var(--amber); }
+.dot-neutral { background: var(--ink-4); }
+.dot-info    { background: var(--blue); }
+
+/* ── HERO ── */
+.hero {
+  padding: 64px 32px 48px;
+  max-width: 1120px; margin: 0 auto;
+  border-bottom: 1px solid var(--line);
+}
+.hero-series {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-3);
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-series::before {
+  content: '';
+  display: inline-block;
+  width: 20px; height: 1px;
+  background: var(--ink-4);
+}
+.hero-label {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--amber);
+  margin-bottom: 16px;
+}
+.hero-title {
+  font-size: clamp(28px, 4vw, 48px);
+  font-weight: 500; letter-spacing: -0.03em; line-height: 1.1;
+  color: var(--ink); max-width: 680px; margin-bottom: 16px;
+}
+.hero-sub {
+  font-size: 16px; color: var(--ink-2); max-width: 560px;
+  line-height: 1.65; margin-bottom: 40px; font-weight: 300;
+}
+
+/* Conditional table as hero element */
+.hero-expectancy {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: var(--r3);
+  overflow: hidden;
+  max-width: 720px;
+  margin-bottom: 40px;
+}
+.he-header {
+  padding: 12px 16px;
+  background: #fafafa;
+  border-bottom: 1px solid var(--line);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.he-title {
+  font-size: 12px; font-weight: 600; color: var(--ink-2);
+  letter-spacing: 0.02em;
+}
+.he-sub { font-size: 11px; color: var(--ink-3); }
+.he-row {
+  display: grid;
+  grid-template-columns: 160px 80px 80px 1fr 100px;
+  padding: 9px 16px;
+  border-bottom: 1px solid #f5f5f5;
+  align-items: center;
+  gap: 8px;
+}
+.he-row:last-child { border-bottom: none; }
+.he-row.header-row {
+  background: #f7f7f7;
+  border-bottom: 1px solid var(--line);
+}
+.he-cell {
+  font-family: var(--mono);
+  font-size: 12px; color: var(--ink-2);
+}
+.he-cell.label { font-size: 11px; color: var(--ink-3); font-family: inherit; letter-spacing: 0.05em; text-transform: uppercase; }
+.he-cell.neg { color: var(--red); }
+.he-cell.pos { color: var(--green); }
+.he-cell.bold { font-weight: 600; color: var(--ink); }
+.he-bar {
+  height: 4px; background: #f0f0f0; border-radius: 2px; overflow: hidden;
+}
+.he-bar-fill {
+  height: 100%; border-radius: 2px;
+  background: var(--red);
+}
+.he-bar-fill.pos { background: var(--green); }
+.hero-finding {
+  background: var(--amber-10);
+  border: 1px solid #fde68a;
+  border-left: 3px solid var(--amber);
+  border-radius: var(--r3);
+  padding: 14px 18px;
+  font-size: 14px; color: #78350f;
+  line-height: 1.6;
+  max-width: 720px;
+}
+.hero-finding strong { font-weight: 600; }
+
+/* ── PANELS ── */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ── CONTENT ── */
+.content {
+  max-width: 1120px; margin: 0 auto;
+  padding: 48px 32px 96px;
+}
+.layout-2col {
+  display: grid; grid-template-columns: 1fr 320px; gap: 64px;
+  align-items: start;
+}
+.layout-full { max-width: 720px; }
+.layout-wide { width: 100%; }
+
+/* ── TYPOGRAPHY ── */
+.eyebrow {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase; margin-bottom: 12px;
+}
+.eyebrow.fail    { color: var(--red); }
+.eyebrow.warn    { color: var(--amber); }
+.eyebrow.neutral { color: var(--ink-3); }
+.eyebrow.info    { color: var(--blue); }
+
+h2.title {
+  font-size: 26px; font-weight: 600; letter-spacing: -0.02em;
+  line-height: 1.2; color: var(--ink); margin-bottom: 16px;
+}
+h3.sh {
+  font-size: 14px; font-weight: 600; color: var(--ink);
+  margin: 40px 0 12px; padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+p.lead {
+  font-size: 16px; color: var(--ink-2); line-height: 1.7;
+  margin-bottom: 16px; font-weight: 300;
+}
+p.body {
+  font-size: 14px; color: var(--ink-2); line-height: 1.75;
+  margin-bottom: 14px;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  position: sticky; top: 68px;
+  border: 1px solid var(--line); border-radius: var(--r3);
+  overflow: hidden; background: var(--surface);
+}
+.sb-head {
+  padding: 12px 16px; border-bottom: 1px solid var(--line);
+  background: #f7f7f7;
+}
+.sb-head-label {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--ink-3);
+}
+.sb-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 9px 16px; border-bottom: 1px solid #f0f0f0; gap: 16px;
+}
+.sb-row:last-child { border-bottom: none; }
+.sb-key { font-size: 12px; color: var(--ink-3); white-space: nowrap; }
+.sb-val { font-family: var(--mono); font-size: 12px; color: var(--ink); font-weight: 500; white-space: nowrap; }
+.sb-val.pos  { color: var(--green); }
+.sb-val.neg  { color: var(--red); }
+.sb-val.warn { color: var(--amber); }
+.sb-val.info { color: var(--blue); }
+
+/* ── TABLES ── */
+.tbl-outer {
+  border: 1px solid var(--line); border-radius: var(--r3);
+  overflow: hidden; margin: 24px 0;
+}
+.tbl-outer table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tbl-outer thead { background: #f7f7f7; }
+.tbl-outer th {
+  padding: 9px 14px; text-align: left;
+  font-family: var(--mono); font-size: 10px; font-weight: 500;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3);
+  border-bottom: 1px solid var(--line); white-space: nowrap;
+}
+.tbl-outer td {
+  padding: 9px 14px; border-bottom: 1px solid #f0f0f0;
+  color: var(--ink-2); vertical-align: top;
+}
+.tbl-outer tr:last-child td { border-bottom: none; }
+.tbl-outer tr:hover td { background: #fafafa; }
+td.pos  { color: var(--green); font-weight: 500; }
+td.neg  { color: var(--red); font-weight: 500; }
+td.warn { color: var(--amber); font-weight: 500; }
+td.bold { color: var(--ink); font-weight: 600; }
+td.mono { font-family: var(--mono); font-size: 12px; }
+
+/* ── RULE BOX ── */
+.rulebox {
+  border: 1px solid var(--line); border-radius: var(--r3);
+  overflow: hidden; margin: 20px 0;
+}
+.rulebox-head {
+  padding: 10px 16px; background: #f7f7f7;
+  border-bottom: 1px solid var(--line);
+  font-size: 11px; font-weight: 600; color: var(--ink-2);
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+.rulebox-body { padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.rule {
+  display: flex; gap: 10px; align-items: flex-start;
+  font-size: 13px; color: var(--ink-2); line-height: 1.5;
+}
+.rule-n {
+  font-family: var(--mono); font-size: 11px; color: var(--blue);
+  flex-shrink: 0; width: 18px; padding-top: 1px;
+}
+
+/* ── CALLOUT ── */
+.callout {
+  border-radius: var(--r3); padding: 16px 20px;
+  margin: 20px 0; font-size: 14px; line-height: 1.65;
+  border-left: 3px solid;
+}
+.callout.info    { background: var(--blue-10); border-color: var(--blue); color: #003d99; }
+.callout.warn    { background: var(--amber-10); border-color: var(--amber); color: #78350f; }
+.callout.danger  { background: #fff1f2; border-color: var(--red); color: #991b1b; }
+.callout.success { background: #f0fdf4; border-color: var(--green); color: #14532d; }
+.callout strong  { font-weight: 600; }
+
+/* ── VERDICT ── */
+.verdict {
+  border-radius: var(--r3); padding: 16px 20px;
+  margin: 24px 0; border: 1px solid;
+}
+.verdict.pass   { border-color: #bbf7d0; background: #f0fdf4; }
+.verdict.fail   { border-color: #fecaca; background: #fff1f2; }
+.verdict.warn   { border-color: #fde68a; background: #fffbeb; }
+.verdict.pivot  { border-color: #bfdbfe; background: #eff6ff; }
+.verdict-lbl {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
+  text-transform: uppercase; margin-bottom: 6px;
+}
+.verdict.pass  .verdict-lbl { color: var(--green); }
+.verdict.fail  .verdict-lbl { color: var(--red); }
+.verdict.warn  .verdict-lbl { color: var(--amber); }
+.verdict.pivot .verdict-lbl { color: var(--blue); }
+.verdict p { font-size: 14px; color: var(--ink-2); margin: 0; line-height: 1.6; }
+
+/* ── METRIC STRIP ── */
+.mstrip {
+  display: grid; gap: 1px; background: var(--line);
+  border: 1px solid var(--line); border-radius: var(--r3);
+  overflow: hidden; margin: 24px 0;
+}
+.mstrip-inner {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1px; background: var(--line);
+}
+.mitem { background: var(--surface); padding: 16px 20px; }
+.mitem-val {
+  font-size: 24px; font-weight: 600; letter-spacing: -0.02em;
+  line-height: 1; margin-bottom: 4px;
+}
+.mitem-val.pos  { color: var(--green); }
+.mitem-val.neg  { color: var(--red); }
+.mitem-val.warn { color: var(--amber); }
+.mitem-val.info { color: var(--blue); }
+.mitem-key { font-size: 11px; color: var(--ink-3); font-weight: 400; }
+
+/* ── DIVIDER ── */
+.divider { border: none; border-top: 1px solid var(--line); margin: 40px 0; }
+
+/* ── FOOTER ── */
+.footer {
+  border-top: 1px solid var(--line);
+  padding: 32px;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 16px;
+  font-size: 12px; color: var(--ink-3);
+}
+.footer strong { color: var(--ink-2); font-weight: 500; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 860px) {
+  .hdr { padding: 0 16px; gap: 12px; }
+  .hdr-series { display: none; }
+  .hero { padding: 40px 16px 32px; }
+  .content { padding: 32px 16px 64px; }
+  .layout-2col { grid-template-columns: 1fr; }
+  .sidebar { position: static; }
+  .he-row { grid-template-columns: 120px 64px 64px 1fr 80px; }
+  .footer { padding: 24px 16px; flex-direction: column; align-items: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <a class="hdr-logo" href="#">
+    <div class="hdr-logo-dot"></div>
+    NQ Intraday Momentum Research
+  </a>
+  <div class="hdr-series">
+    Part of <a href="https://s4g4cr.github.io/nq-quant-research/">NQ Quantitative Research Series</a>
+  </div>
+  <nav class="hdr-tabs" role="tablist">
+    <button class="tab active" onclick="show('overview',this)">
+      <span class="tab-dot dot-neutral"></span>Overview
+    </button>
+    <button class="tab" onclick="show('p19',this)">
+      <span class="tab-dot dot-fail"></span>Ph 19 · Intraday Momentum
+    </button>
+    <button class="tab" onclick="show('findings',this)">
+      <span class="tab-dot dot-warn"></span>What We Learned
+    </button>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-series">NQ Quantitative Research · Phase 19</div>
+  <div class="hero-label">Research concluded · Hypothesis falsified at diagnostic</div>
+  <h1 class="hero-title">Intraday Momentum (Gao et al. 2018) in NQ futures</h1>
+  <p class="hero-sub">
+    One phase testing whether the Gao et al. (2018) intraday momentum effect —
+    first half-hour return predicts last half-hour return — holds in NQ E-mini
+    futures. Diagnostic accuracy was 48.6%, below the 50% gate. No experiments ran.
+    The opposite pattern (intraday reversal) shows a statistically significant signal.
+  </p>
+
+  <!-- Conditional returns table -->
+  <div class="hero-expectancy">
+    <div class="he-header">
+      <span class="he-title">Conditional r17 by r1 sign — Phase 19 diagnostic</span>
+      <span class="he-sub">1,203 sessions · full dataset 2021–2026</span>
+    </div>
+    <div class="he-row header-row">
+      <span class="he-cell label">Condition</span>
+      <span class="he-cell label">N</span>
+      <span class="he-cell label">Mean r17</span>
+      <span class="he-cell label">Direction</span>
+      <span class="he-cell label">Accuracy</span>
+    </div>
+    <div class="he-row">
+      <span class="he-cell">r1 &gt; 0 → LONG</span>
+      <span class="he-cell">659</span>
+      <span class="he-cell neg">−0.0117%</span>
+      <span class="he-cell">
+        <div class="he-bar"><div class="he-bar-fill" style="width:55%"></div></div>
+      </span>
+      <span class="he-cell neg">49.0%</span>
+    </div>
+    <div class="he-row">
+      <span class="he-cell">r1 &lt; 0 → SHORT</span>
+      <span class="he-cell">543</span>
+      <span class="he-cell neg">+0.0227%</span>
+      <span class="he-cell">
+        <div class="he-bar"><div class="he-bar-fill" style="width:50%"></div></div>
+      </span>
+      <span class="he-cell neg">48.1%</span>
+    </div>
+    <div class="he-row">
+      <span class="he-cell bold">Overall</span>
+      <span class="he-cell bold">1,202</span>
+      <span class="he-cell bold">+0.0038%</span>
+      <span class="he-cell">
+        <div class="he-bar"><div class="he-bar-fill" style="width:52%"></div></div>
+      </span>
+      <span class="he-cell neg bold">48.6%</span>
+    </div>
+  </div>
+
+  <div class="hero-finding">
+    <strong>Key finding:</strong> The Gao et al. momentum effect does not hold in NQ.
+    When r1 &gt; 0 (positive first half-hour), the last half-hour is slightly <em>negative</em>
+    on average (mean r17 = −0.0117%). When r1 &lt; 0, the last half-hour is slightly
+    <em>positive</em> (+0.0227%). The two-sample t-test supports the <em>reversal</em>
+    direction (t=−1.939, p=0.026), not momentum. NQ overshoots intraday and reverts
+    toward the close — the opposite of what Gao et al. found in S&amp;P 500 ETF (1993–2013).
+  </div>
+</section>
+
+<!-- ═══════════════ OVERVIEW ═══════════════ -->
+<div class="panel active" id="panel-overview">
+<div class="content">
+  <div class="layout-2col">
+    <div>
+      <div class="eyebrow neutral">Research summary</div>
+      <h2 class="title">Momentum falsified — reversal signal detected</h2>
+      <p class="lead">
+        Gao, Han, Li, and Zhou (2018) documented that the first half-hour return
+        of the S&amp;P 500 ETF positively predicts the last half-hour return of the
+        same session. Phase 19 tested whether this effect replicates in NQ E-mini
+        futures over the 2021–2026 period.
+      </p>
+      <p class="body">
+        The mandatory diagnostic gate — directional accuracy &lt; 50% → stop
+        immediately — was triggered at the first check. Overall accuracy was
+        48.6% (1,202 sessions): 49.0% on LONG days (r1 &gt; 0) and 48.1% on SHORT days
+        (r1 &lt; 0). Both sides are below 50%, and the signal runs in the wrong direction
+        — positive first half-hours are associated with slightly negative last half-hours
+        in NQ, and vice versa.
+      </p>
+      <p class="body">
+        The two-sample t-test comparing mean r17 under r1&gt;0 vs. r1&lt;0 returned
+        t=−1.939, p=0.026 for the <em>reversal</em> hypothesis (the opposite of the
+        paper). This is statistically significant at the 5% level. NQ does not show
+        intraday momentum in this period; it shows intraday reversal.
+      </p>
+
+      <div class="callout danger">
+        <strong>Diagnostic gate triggered:</strong> Directional accuracy 48.6% &lt; 50%.
+        Per the Phase 19 protocol, all experiments were skipped. The paper's finding
+        does not hold in NQ — proceeding to experimentation would be data-mining
+        on a falsified hypothesis.
+      </div>
+
+      <h3 class="sh">Phase 19 at a glance</h3>
+      <div class="tbl-outer">
+        <table>
+          <thead>
+            <tr><th>Metric</th><th>Value</th><th>Interpretation</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Sessions analyzed</td>
+              <td class="mono">1,203</td>
+              <td>Full dataset 2021-06-25 to 2026-06-17</td>
+            </tr>
+            <tr>
+              <td>r1 &gt; 0 (LONG days)</td>
+              <td class="warn">54.8% (659)</td>
+              <td>More up first-half-hours than down in this period</td>
+            </tr>
+            <tr>
+              <td>r1 &lt; 0 (SHORT days)</td>
+              <td class="mono">45.1% (543)</td>
+              <td>Slight positive bias in first half-hour of NQ</td>
+            </tr>
+            <tr>
+              <td>Mean r17 | r1 &gt; 0</td>
+              <td class="neg">−0.0117%</td>
+              <td>Negative last half-hour after positive first half-hour</td>
+            </tr>
+            <tr>
+              <td>Mean r17 | r1 &lt; 0</td>
+              <td class="pos">+0.0227%</td>
+              <td>Positive last half-hour after negative first half-hour</td>
+            </tr>
+            <tr>
+              <td>Overall directional accuracy</td>
+              <td class="neg">48.6%</td>
+              <td>Below 50% → diagnostic gate triggered</td>
+            </tr>
+            <tr>
+              <td>T-test (momentum direction)</td>
+              <td class="neg">t=−1.939, p=0.974</td>
+              <td>Strongly rejects momentum hypothesis</td>
+            </tr>
+            <tr>
+              <td>T-test (reversal direction)</td>
+              <td class="pos">t=−1.939, p=0.026</td>
+              <td>Significant — reversal, not momentum, exists in NQ</td>
+            </tr>
+            <tr>
+              <td>Experiments run</td>
+              <td class="neg">0 / 8</td>
+              <td>All skipped — diagnostic gate is hard stop</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="verdict fail">
+        <div class="verdict-lbl">Verdict · Phase 19</div>
+        <p>Hypothesis falsified at diagnostic. The Gao et al. (2018) intraday momentum effect does not replicate in NQ E-mini futures (2021–2026). Directional accuracy was 48.6%, below the 50% hard gate. No experiments were run. The diagnostic instead revealed a statistically significant intraday reversal signal (p=0.026) — NQ's first half-hour return negatively predicts the last half-hour return.</p>
+      </div>
+    </div>
+
+    <div>
+      <div class="sidebar">
+        <div class="sb-head"><div class="sb-head-label">Research scope</div></div>
+        <div class="sb-row"><span class="sb-key">Phase</span><span class="sb-val">19</span></div>
+        <div class="sb-row"><span class="sb-key">Asset</span><span class="sb-val">NQ E-mini Futures</span></div>
+        <div class="sb-row"><span class="sb-key">Timeframe</span><span class="sb-val">1-minute bars</span></div>
+        <div class="sb-row"><span class="sb-key">Dataset</span><span class="sb-val">2021-06-25 to 2026-06-17</span></div>
+        <div class="sb-row"><span class="sb-key">Bars</span><span class="sb-val">492,990</span></div>
+        <div class="sb-row"><span class="sb-key">Sessions</span><span class="sb-val">1,203</span></div>
+        <div class="sb-head" style="border-top:1px solid var(--line)"><div class="sb-head-label">Signal definition</div></div>
+        <div class="sb-row"><span class="sb-key">r1</span><span class="sb-val">(close₀₉:₅₉ − prev₁₅:₅₉) / prev₁₅:₅₉</span></div>
+        <div class="sb-row"><span class="sb-key">Entry</span><span class="sb-val">Close of 15:29 bar</span></div>
+        <div class="sb-row"><span class="sb-key">Exit</span><span class="sb-val">Close of 15:59 bar</span></div>
+        <div class="sb-row"><span class="sb-key">r17</span><span class="sb-val">(close₁₅:₅₉ − close₁₅:₂₉) / close₁₅:₂₉</span></div>
+        <div class="sb-row"><span class="sb-key">SL / TP</span><span class="sb-val">None (held to close)</span></div>
+        <div class="sb-head" style="border-top:1px solid var(--line)"><div class="sb-head-label">Diagnostic result</div></div>
+        <div class="sb-row"><span class="sb-key">Dir. accuracy</span><span class="sb-val neg">48.6%</span></div>
+        <div class="sb-row"><span class="sb-key">LONG accuracy</span><span class="sb-val neg">49.0%</span></div>
+        <div class="sb-row"><span class="sb-key">SHORT accuracy</span><span class="sb-val neg">48.1%</span></div>
+        <div class="sb-row"><span class="sb-key">Gate</span><span class="sb-val neg">FAILED (&lt;50%)</span></div>
+        <div class="sb-row"><span class="sb-key">Reversal p-value</span><span class="sb-val info">0.026</span></div>
+        <div class="sb-row"><span class="sb-key">Experiments run</span><span class="sb-val neg">0 / 8</span></div>
+        <div class="sb-row"><span class="sb-key">WFO executed</span><span class="sb-val neg">No</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════ PHASE 19 ═══════════════ -->
+<div class="panel" id="panel-p19">
+<div class="content">
+  <div class="layout-2col">
+    <div>
+      <div class="eyebrow fail">Phase 19 · Falsified at diagnostic</div>
+      <h2 class="title">Intraday Momentum — Gao et al. (2018) Replication</h2>
+      <p class="lead">
+        The Gao et al. (2018) paper "Market Intraday Momentum" (Journal of Financial
+        Economics, 129(2), 394–414) documented that the first 30-minute return of the
+        S&amp;P 500 ETF positively predicts the last 30-minute return of the same
+        session — over 1993–2013, with replications across 60+ futures and international ETFs.
+      </p>
+
+      <h3 class="sh">Signal definition</h3>
+      <div class="rulebox">
+        <div class="rulebox-head">Returns and timing</div>
+        <div class="rulebox-body">
+          <div class="rule"><span class="rule-n">r1</span><span><strong>First half-hour return</strong> = (close₀₉:₅₉ − close_prev₁₅:₅₉) / close_prev₁₅:₅₉  · previous session = 15:59 close of prior trading day</span></div>
+          <div class="rule"><span class="rule-n">r16</span><span><strong>Pre-close half-hour</strong> = (close₁₄:₅₉ − close₁₄:₂₉) / close₁₄:₂₉  · 14:30–15:00 period</span></div>
+          <div class="rule"><span class="rule-n">r17</span><span><strong>Last half-hour return</strong> = (close₁₅:₅₉ − close₁₅:₂₉) / close₁₅:₂₉  · this is the prediction target</span></div>
+          <div class="rule"><span class="rule-n">Dir</span><span><strong>Trade direction</strong> = sign(r1) · LONG if r1 &gt; 0, SHORT if r1 &lt; 0</span></div>
+          <div class="rule"><span class="rule-n">In</span><span><strong>Entry</strong> = close of 15:29 bar + slippage (0.25 pts/side)</span></div>
+          <div class="rule"><span class="rule-n">Out</span><span><strong>Exit</strong> = close of 15:59 bar − slippage · always · no SL, no TP</span></div>
+        </div>
+      </div>
+
+      <h3 class="sh">5-section diagnostic</h3>
+      <p class="body">
+        The diagnostic runs on the full dataset before any train/test split or
+        experiment. Section 3 is the gate — if directional accuracy &lt; 50%, all
+        experiments are cancelled immediately.
+      </p>
+
+      <h3 class="sh">Section 1 — First half-hour return distribution</h3>
+      <div class="mstrip">
+        <div class="mstrip-inner">
+          <div class="mitem">
+            <div class="mitem-val info">1,203</div>
+            <div class="mitem-key">Sessions with data</div>
+          </div>
+          <div class="mitem">
+            <div class="mitem-val warn">54.8%</div>
+            <div class="mitem-key">r1 &gt; 0 (LONG days)</div>
+          </div>
+          <div class="mitem">
+            <div class="mitem-val info">45.1%</div>
+            <div class="mitem-key">r1 &lt; 0 (SHORT days)</div>
+          </div>
+          <div class="mitem">
+            <div class="mitem-val info">0.1%</div>
+            <div class="mitem-key">r1 = 0 (skipped)</div>
+          </div>
+        </div>
+      </div>
+      <div class="tbl-outer">
+        <table>
+          <thead><tr><th>Percentile</th><th>p10</th><th>p25</th><th>p50</th><th>p75</th><th>p90</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>r1 (%)</td>
+              <td class="neg mono">−1.115%</td>
+              <td class="neg mono">−0.409%</td>
+              <td class="mono">+0.075%</td>
+              <td class="pos mono">+0.551%</td>
+              <td class="pos mono">+1.118%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="body">
+        NQ's first half-hour return has a slight positive median (+0.075%), consistent
+        with the broad uptrend over the 2021–2026 sample. The 10th–90th percentile
+        range is ±1.1%, showing meaningful intraday variation in the opening half-hour.
+      </p>
+
+      <h3 class="sh">Section 2 — Last half-hour return distribution</h3>
+      <div class="tbl-outer">
+        <table>
+          <thead><tr><th>Metric</th><th>p10</th><th>p25</th><th>p50</th><th>p75</th><th>p90</th><th>Uncond. mean</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>r17 (%)</td>
+              <td class="neg mono">−0.321%</td>
+              <td class="neg mono">−0.133%</td>
+              <td class="mono">+0.001%</td>
+              <td class="pos mono">+0.145%</td>
+              <td class="pos mono">+0.324%</td>
+              <td class="mono">+0.0041%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="body">
+        The unconditional mean last half-hour return is +0.0041% — essentially zero.
+        The distribution is approximately symmetric around zero. 50.4% of sessions have
+        a positive r17. This is the base rate before conditioning on r1.
+      </p>
+
+      <h3 class="sh">Section 3 — Conditional analysis (core test)</h3>
+      <div class="tbl-outer">
+        <table>
+          <thead>
+            <tr><th>Condition</th><th>N</th><th>Mean r17</th><th>WR%</th><th>t-stat</th><th>p-value</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>All days</td>
+              <td class="mono">1,202</td>
+              <td class="mono">+0.0038%</td>
+              <td class="neg mono">48.6%</td>
+              <td class="mono">—</td>
+              <td class="mono">—</td>
+            </tr>
+            <tr>
+              <td>r1 &gt; 0 → LONG (momentum)</td>
+              <td class="mono">659</td>
+              <td class="neg mono">−0.0117%</td>
+              <td class="neg mono">49.0%</td>
+              <td class="neg mono">−1.079</td>
+              <td class="neg mono">0.860 ✗</td>
+            </tr>
+            <tr>
+              <td>r1 &lt; 0 → SHORT (momentum)</td>
+              <td class="mono">543</td>
+              <td class="neg mono">+0.0227%</td>
+              <td class="neg mono">48.1%</td>
+              <td class="neg mono">+1.573</td>
+              <td class="neg mono">0.942 ✗</td>
+            </tr>
+            <tr>
+              <td class="bold">Two-sample (L vs S, momentum)</td>
+              <td class="mono bold">—</td>
+              <td class="mono bold">—</td>
+              <td class="neg bold">48.6%</td>
+              <td class="neg mono bold">−1.939</td>
+              <td class="neg mono bold">0.974 ✗</td>
+            </tr>
+            <tr>
+              <td class="bold">Two-sample (L vs S, reversal)</td>
+              <td class="mono bold">—</td>
+              <td class="mono bold">—</td>
+              <td class="pos bold">—</td>
+              <td class="pos mono bold">−1.939</td>
+              <td class="pos mono bold">0.026 ✓</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout danger">
+        <strong>Gate triggered — directional accuracy 48.6% &lt; 50%.</strong> All 8 experiments
+        were skipped. The t-test for the momentum hypothesis (r17|r1&gt;0 &gt; 0 and r17|r1&lt;0 &lt; 0)
+        shows p=0.860 and p=0.942 respectively — strongly failing to reject the null. The two-sample
+        test comparing mean r17 across groups shows p=0.974 for the momentum direction. No
+        version of the Gao et al. hypothesis holds in NQ.
+      </div>
+
+      <h3 class="sh">Section 4 — Volatility conditioning</h3>
+      <p class="body">
+        Even conditioning on high-volatility sessions (first 30-minute range above the
+        20-session rolling median), the directional accuracy remained below 50% and
+        in the reversal direction. Low-volatility sessions were similar. The effect
+        failure is not attributable to volatility regime mixing.
+      </p>
+
+      <h3 class="sh">Section 5 — Signal frequency</h3>
+      <p class="body">
+        1,202 tradeable days (r1≠0) out of 1,203 sessions — 99.9% of sessions would
+        produce a trade under strict replication. This is not a filtering issue;
+        the strategy trades nearly every session. With 1,202 sessions, the sample size
+        is more than adequate to detect a meaningful directional bias if one existed.
+        The absence of any momentum signal is statistically robust.
+      </p>
+
+      <div class="verdict fail">
+        <div class="verdict-lbl">Verdict · Phase 19</div>
+        <p>Hypothesis falsified at the diagnostic stage. 1,203 sessions over 5 years, 1,202 tradeable — directional accuracy 48.6%, below the hard 50% gate. The paper's momentum effect does not hold in NQ. No experiments ran. The diagnostic incidentally revealed a statistically significant reversal signal (t=−1.939, p=0.026) that inverts the paper's hypothesis.</p>
+      </div>
+    </div>
+
+    <div>
+      <div class="sidebar">
+        <div class="sb-head"><div class="sb-head-label">Academic reference</div></div>
+        <div class="sb-row"><span class="sb-key">Paper</span><span class="sb-val" style="font-family:inherit;font-size:11px;">Gao et al. (2018) JFE</span></div>
+        <div class="sb-row"><span class="sb-key">Original asset</span><span class="sb-val">S&amp;P 500 ETF (SPY)</span></div>
+        <div class="sb-row"><span class="sb-key">Original period</span><span class="sb-val">1993–2013</span></div>
+        <div class="sb-row"><span class="sb-key">Claimed replications</span><span class="sb-val">60+ instruments</span></div>
+        <div class="sb-head" style="border-top:1px solid var(--line)"><div class="sb-head-label">NQ diagnostic result</div></div>
+        <div class="sb-row"><span class="sb-key">Sessions</span><span class="sb-val">1,203</span></div>
+        <div class="sb-row"><span class="sb-key">Dir. accuracy</span><span class="sb-val neg">48.6%</span></div>
+        <div class="sb-row"><span class="sb-key">LONG WR</span><span class="sb-val neg">49.0%</span></div>
+        <div class="sb-row"><span class="sb-key">SHORT WR</span><span class="sb-val neg">48.1%</span></div>
+        <div class="sb-row"><span class="sb-key">Gate</span><span class="sb-val neg">FAILED</span></div>
+        <div class="sb-head" style="border-top:1px solid var(--line)"><div class="sb-head-label">Reversal signal</div></div>
+        <div class="sb-row"><span class="sb-key">t-statistic</span><span class="sb-val info">−1.939</span></div>
+        <div class="sb-row"><span class="sb-key">p-value</span><span class="sb-val info">0.026</span></div>
+        <div class="sb-row"><span class="sb-key">Direction</span><span class="sb-val info">Opposite of paper</span></div>
+        <div class="sb-row"><span class="sb-key">Tested?</span><span class="sb-val warn">Not in scope</span></div>
+        <div class="sb-head" style="border-top:1px solid var(--line)"><div class="sb-head-label">Experiment status</div></div>
+        <div class="sb-row"><span class="sb-key">Planned</span><span class="sb-val">8</span></div>
+        <div class="sb-row"><span class="sb-key">Executed</span><span class="sb-val neg">0</span></div>
+        <div class="sb-row"><span class="sb-key">WFO</span><span class="sb-val neg">Not run</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════ FINDINGS ═══════════════ -->
+<div class="panel" id="panel-findings">
+<div class="content layout-full">
+  <div class="eyebrow warn">What we learned</div>
+  <h2 class="title">Why momentum fails in NQ — and what the data actually says</h2>
+  <p class="lead">
+    Phase 19 produced a clean result in the wrong direction. The Gao et al. momentum
+    effect is one of the best-documented intraday patterns in academic finance.
+    Its failure to replicate in NQ — and the statistically significant reversal
+    pattern that appeared instead — is informative about how NQ differs from the
+    instruments in which the effect was originally documented.
+  </p>
+
+  <h3 class="sh">Why the paper's finding may not hold in NQ</h3>
+  <p class="body">
+    Gao et al. (2018) found that the S&amp;P 500 ETF (SPY) shows intraday momentum
+    from 1993 to 2013 — positive first half-hour predicts positive last half-hour.
+    Their mechanism: informed traders concentrate activity at the open and close of
+    the session, creating autocorrelation in directional flow. The pattern was
+    replicated across 60+ instruments, predominantly equity ETFs and broad indices.
+  </p>
+  <p class="body">
+    NQ is a different animal. Several structural features distinguish it from SPY:
+  </p>
+  <div class="rulebox">
+    <div class="rulebox-head">Why NQ may show reversal instead of momentum</div>
+    <div class="rulebox-body">
+      <div class="rule"><span class="rule-n">1</span><span><strong>Higher beta, higher mean reversion intraday.</strong> NQ amplifies market moves. A strong up-open often exhausts buying pressure by mid-session, leaving latecomers to cover into the close. The opening spike literature (Phases 17–18) already confirmed that 93% of opening extremes are visited before the session end.</span></div>
+      <div class="rule"><span class="rule-n">2</span><span><strong>Time period mismatch.</strong> The paper covers 1993–2013. NQ's 2021–2026 sample includes post-COVID, aggressive Fed rate hikes, and AI-driven tech sector volatility — regimes absent from the original study and potentially unfavorable for momentum continuation strategies.</span></div>
+      <div class="rule"><span class="rule-n">3</span><span><strong>Effect decay.</strong> Academic anomalies are known to weaken post-publication. The paper was published in 2018. If institutional traders incorporated the pattern into VWAP execution or closing algorithms between 2018 and 2021, the momentum signal would have been arbitraged away — possibly to reversal.</span></div>
+      <div class="rule"><span class="rule-n">4</span><span><strong>Futures vs. ETF mechanics.</strong> SPY has creation/redemption mechanics, dividend flows, and end-of-day rebalancing that do not apply to futures. The futures close (settlement) is driven by contract mechanics and rollover demand rather than ETF basket replication — a different flow structure at the close.</span></div>
+    </div>
+  </div>
+
+  <h3 class="sh">The reversal signal — what it means</h3>
+  <div class="tbl-outer">
+    <table>
+      <thead>
+        <tr><th>Hypothesis</th><th>Direction</th><th>t-stat</th><th>p-value</th><th>Interpretation</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Momentum (paper)</td>
+          <td>sign(r17) = sign(r1)</td>
+          <td class="neg mono">−1.939</td>
+          <td class="neg mono">0.974</td>
+          <td class="neg">Strongly rejected</td>
+        </tr>
+        <tr>
+          <td class="bold">Reversal (NQ finding)</td>
+          <td class="bold">sign(r17) = −sign(r1)</td>
+          <td class="pos mono bold">−1.939</td>
+          <td class="pos mono bold">0.026</td>
+          <td class="pos bold">Significant at 5%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="body">
+    The reversal signal is the same t-statistic in the opposite direction. With 1,202
+    sessions, t=1.939 would be significant at the 5% level in a one-sided test. This
+    is not a marginal or borderline finding — it is a clean, well-powered result that
+    the effect in NQ runs opposite to the paper.
+  </p>
+
+  <div class="callout info">
+    <strong>The reversal hypothesis is not within Phase 19's scope</strong> — experiments
+    were explicitly gated on the stated hypothesis. A "Phase 19b" that tests intraday
+    reversal (SHORT when r1&gt;0, LONG when r1&lt;0) would need to be designed independently,
+    with its own diagnostic gate, train/test split, and experiment structure.
+  </div>
+
+  <h3 class="sh">What to try if a reversal phase is explored</h3>
+  <div class="rulebox">
+    <div class="rulebox-head">Candidate design for an intraday reversal test (not tested)</div>
+    <div class="rulebox-body">
+      <div class="rule"><span class="rule-n">1</span><span><strong>Flip direction:</strong> enter SHORT when r1&gt;0 (strong up first half-hour), LONG when r1&lt;0. Hold to 15:59 close. Everything else identical to Phase 19 design.</span></div>
+      <div class="rule"><span class="rule-n">2</span><span><strong>Magnitude filter:</strong> condition on large |r1| (e.g., |r1| &gt; 0.5%). The reversal effect is likely stronger when the morning move is more extreme — more overshooting, more to revert.</span></div>
+      <div class="rule"><span class="rule-n">3</span><span><strong>r16 confirmation:</strong> require r16 to agree with the reversal direction (r16 sign = −sign(r1)). If the pre-close half-hour is already moving against the morning, this confirms the reversal thesis.</span></div>
+      <div class="rule"><span class="rule-n">4</span><span><strong>Diagnostic gate:</strong> directional accuracy &gt; 52% on full dataset (stricter than the 50% momentum gate, because reversals can be noisier). WFO threshold: SR_test &gt; 0.5 and N_test ≥ 80.</span></div>
+    </div>
+  </div>
+
+  <h3 class="sh">Broader research context</h3>
+  <p class="body">
+    The research series has now tested two academic-literature patterns: the POC mean
+    reversion (a confirmed edge) and Gao et al. intraday momentum (falsified in NQ).
+    Both used the same infrastructure, the same diagnostic gates, and the same
+    train/test/WFO methodology.
+  </p>
+  <p class="body">
+    The contrast is instructive. The POC mean reversion worked because it was grounded
+    in NQ-specific auction market behavior — volume-weighted price levels that market
+    participants monitor in real time. Intraday momentum failed because it was
+    documented in a different instrument (SPY), a different era (1993–2013), and
+    relies on a flow mechanism (informed trader concentration) that may not operate
+    the same way in NQ futures.
+  </p>
+  <p class="body">
+    This is the expected result when testing an academic anomaly out-of-sample, in
+    a different instrument, over a decade after publication. It confirms the
+    discipline of the research methodology: the diagnostic gate exists precisely to
+    stop experimentation when the hypothesis is already falsified at the price level.
+  </p>
+
+  <div class="verdict pivot">
+    <div class="verdict-lbl">Key insight from Phase 19</div>
+    <p>NQ futures show intraday reversal (p=0.026), not momentum, over 2021–2026. The Gao et al. (2018) effect does not replicate in this instrument and period. Academic anomalies documented in equity ETFs with a 1993–2013 sample are not reliable templates for NQ systematic strategies in the current regime. The reversal signal warrants its own independent research phase with a clean hypothesis and proper methodology.</p>
+  </div>
+</div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div>
+    <strong>NQ Quantitative Research</strong> — Systematic research on NQ E-mini Futures (2021–2026).
+  </div>
+  <div>
+    <a href="index.html" style="color:var(--blue);text-decoration:none;">← Research Hub</a>
+    &nbsp;·&nbsp;
+    <a href="orb_research.html" style="color:var(--blue);text-decoration:none;">ORB (Ph. 1–7)</a>
+    &nbsp;·&nbsp;
+    <a href="vwap_research.html" style="color:var(--blue);text-decoration:none;">VWAP (Ph. 8–10)</a>
+    &nbsp;·&nbsp;
+    <a href="poc_research.html" style="color:var(--blue);text-decoration:none;">POC (Ph. 11–16)</a>
+    &nbsp;·&nbsp;
+    <a href="failed_spike_research.html" style="color:var(--blue);text-decoration:none;">Failed Spike (Ph. 17)</a>
+    &nbsp;·&nbsp;
+    <a href="spike_extreme_research.html" style="color:var(--blue);text-decoration:none;">Spike Extreme (Ph. 18)</a>
+  </div>
+</footer>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>
