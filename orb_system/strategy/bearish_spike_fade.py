@@ -38,15 +38,26 @@ MAX_BARS      = 180     # 3 hours from entry
 
 # ── session params builder ────────────────────────────────────────────────────
 
-def _add_params(out, row, p_bear, poc_per_date, avg_vol_per_date):
+def _add_params(out, row, p_bear, poc_per_date, avg_vol_per_date,
+                hmm_threshold=P_BEAR_THRESH, consecutive_filter=False,
+                state_yest=None, state_2ago=None, bear_s=None):
     d = row["date"]
     prev_atr = float(row["daily_atr"])
     if np.isnan(prev_atr) or prev_atr <= 0:
         return
     open_930 = float(row["open_930"])
     exp_spike = SPIKE_RATIO * prev_atr
+
+    signal = bool(p_bear > hmm_threshold)
+    if signal and consecutive_filter:
+        # Require yesterday AND day-before both in bearish Viterbi state
+        if (state_yest is None or state_2ago is None or bear_s is None
+                or int(state_yest) != int(bear_s)
+                or int(state_2ago) != int(bear_s)):
+            signal = False
+
     out[d] = {
-        "signal_active": p_bear > P_BEAR_THRESH,
+        "signal_active": signal,
         "p_bearish":     round(float(p_bear), 4),
         "prev_atr":      round(prev_atr, 2),
         "open_930":      round(open_930, 2),
@@ -66,6 +77,8 @@ def compute_session_params(
     lmap: Dict[int, str],
     n_states: int,
     train_end_str: str,
+    hmm_threshold: float = P_BEAR_THRESH,
+    consecutive_filter: bool = False,
 ) -> dict:
     """
     Build per-session signal & price params for ALL dates in feat_all.
@@ -74,6 +87,9 @@ def compute_session_params(
     Test dates:     run predict_states(model, X_te) for Viterbi, then
                     compute P(bearish | yesterday's state) via transition T.
     The first test day's 'yesterday' = last training day's state.
+
+    hmm_threshold:     P(bearish | yesterday) must exceed this to set signal_active.
+    consecutive_filter: if True, also require state_{t-1} AND state_{t-2} == bearish.
     """
     inv = {v: k for k, v in lmap.items()}
     T, _ = compute_transition_matrix(states_tr, n_states)
@@ -89,14 +105,30 @@ def compute_session_params(
 
     params: dict = {}
 
+    # Training dates
     for i in range(1, len(fa_tr)):
-        p = float(T[states_tr[i - 1], bear_s])
-        _add_params(params, fa_tr.iloc[i], p, poc_per_date, avg_vol_per_date)
+        st_y = int(states_tr[i - 1])
+        st_z = int(states_tr[i - 2]) if i >= 2 else None
+        p    = float(T[st_y, bear_s])
+        _add_params(params, fa_tr.iloc[i], p, poc_per_date, avg_vol_per_date,
+                    hmm_threshold, consecutive_filter, st_y, st_z, bear_s)
 
+    # Test dates (handle first two carefully for consecutive look-back)
     for i in range(len(fa_te)):
-        state_yest = states_tr[-1] if i == 0 else states_te[i - 1]
-        p = float(T[state_yest, bear_s])
-        _add_params(params, fa_te.iloc[i], p, poc_per_date, avg_vol_per_date)
+        if i == 0:
+            st_y = int(states_tr[-1]) if len(states_tr) > 0 else None
+            st_z = int(states_tr[-2]) if len(states_tr) >= 2 else None
+        elif i == 1:
+            st_y = int(states_te[0])
+            st_z = int(states_tr[-1]) if len(states_tr) > 0 else None
+        else:
+            st_y = int(states_te[i - 1])
+            st_z = int(states_te[i - 2])
+        if st_y is None:
+            continue
+        p = float(T[st_y, bear_s])
+        _add_params(params, fa_te.iloc[i], p, poc_per_date, avg_vol_per_date,
+                    hmm_threshold, consecutive_filter, st_y, st_z, bear_s)
 
     return params
 
@@ -114,7 +146,8 @@ def run_backtest(
     entry_frac: float,     # fraction of expected_spike for entry trigger (default 1/3)
     initial_capital: float,
     risk_pct: float,
-    theoretical: bool = False,  # True → no costs, 1 contract
+    theoretical: bool = False,       # True → no costs, 1 contract
+    entry_window_end: dt_time = ENTRY_END,  # latest bar allowed for entry signal
 ) -> List[dict]:
     """
     Simulate SHORT entries on each date in trade_dates.
@@ -177,7 +210,7 @@ def run_backtest(
 
         for j, aj in enumerate(rth_abs):
             bt = rth_t[j]
-            if bt > ENTRY_END:
+            if bt > entry_window_end:
                 break
             bh = high_v[aj]; bl = low_v[aj]
             bc = close_v[aj]; bo = open_v[aj]
