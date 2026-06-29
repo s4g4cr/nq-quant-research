@@ -22,6 +22,7 @@ and bootstrap Monte Carlo sizing.
 | [POC Closing Magnet](docs/poc_closing_magnet_research.html) | POC as closing-hour magnet · Phase 20 | Real signal but not confirmed · WFO failed 2/5 windows |
 | [Intraday Seasonality](docs/intraday_seasonality_research.html) | Half-hour return seasonality · Phase 21 · Heston et al. 2010 | Effect exists but interval unstable · WFO 0/5 windows |
 | [HMM Transition + Spike Fade](docs/hmm_transition_research.html) | Predictive HMM via transition matrix · Phases 22–22C | Signal confirmed p≈0.000 · Strategy too sparse · PF=2.529 on 15 trades |
+| [POC B1 + HMM Ranging — Final System](docs/hmm_poc_final_research.html) | POC reversion filtered to ranging days · Phases 23–24 | CONFIRMED: p=0.053 · bootstrap p5=1.017 · 91.8% FTMO pass · 55d median |
 
 Interactive documentation with full phase-by-phase results, equity curves, and parameter tables.
 
@@ -41,6 +42,7 @@ All six are accessible from the research hub:
 | POC Closing Magnet (Phase 20) | [s4g4cr.github.io/nq-quant-research/poc_closing_magnet_research.html](https://s4g4cr.github.io/nq-quant-research/poc_closing_magnet_research.html) |
 | Intraday Seasonality (Phase 21) | [s4g4cr.github.io/nq-quant-research/intraday_seasonality_research.html](https://s4g4cr.github.io/nq-quant-research/intraday_seasonality_research.html) |
 | HMM Transition + Spike Fade (Phases 22–22C) | [s4g4cr.github.io/nq-quant-research/hmm_transition_research.html](https://s4g4cr.github.io/nq-quant-research/hmm_transition_research.html) |
+| POC B1 + HMM Ranging — Final System (Phases 23–24) | [s4g4cr.github.io/nq-quant-research/hmm_poc_final_research.html](https://s4g4cr.github.io/nq-quant-research/hmm_poc_final_research.html) |
 
 ---
 
@@ -113,7 +115,8 @@ nq-quant-research/
    ├── intraday_reversal_research.html    — Intraday Reversal research (Phases 19B–19C)
 │   ├── poc_closing_magnet_research.html   — POC Closing Magnet research (Phase 20)
 │   ├── intraday_seasonality_research.html — Intraday Seasonality research (Phase 21)
-│   └── hmm_transition_research.html       — HMM Transition + Spike Fade research (Phases 22–22C)
+│   ├── hmm_transition_research.html       — HMM Transition + Spike Fade research (Phases 22–22C)
+│   └── hmm_poc_final_research.html        — POC B1 + HMM Ranging Final System (Phases 23–24)
 └── run_phase*.py            — phase entry-points
 ```
 
